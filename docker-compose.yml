@@ -15,3 +15,10 @@ services:
     restart: always
     ports:
       - 8080:8080
+
+  server: 
+    image: node:22-alpine
+    restart: always
+    ports:
+      - 3000:3000
+    command: npm i -silent && npm run dev 
