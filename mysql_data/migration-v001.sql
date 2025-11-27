@@ -94,5 +94,22 @@ CREATE TABLE commande (
   date_commande DATE,
   date_prestation DATE,
   heure_livraison DATETIME,
-  
+  prix_menu DOUBLE,
+  nombre_personne INT,
+  prix_livraison DOUBLE,
+  statut VARCHAR(50),
+  pret_materiel BOOL,
+  restitution_materiel BOOL,
+  user_id INT NOT NULL, 
+  PRIMARY KEY (commande_id),
+  FOREIGN KEY (user_id) REFERENCES user (user_id)
+
 )
+
+CREATE TABLE commande_menu (
+  commande_id int NOT NULL,
+  menu_id int NOT NULL,
+  CONSTRAINT pk_commande_menu PRIMARY KEY (commande_id, menu_id),
+  FOREIGN KEY (commande_id) REFERENCES commande (commande_id),
+  FOREIGN KEY (menu_id) REFERENCES menu (menu_id)
+);
