@@ -16,7 +16,7 @@ CREATE TABLE user  (
   telephone VARCHAR (50),
   ville VARCHAR (50),
   pays VARCHAR (50),
-  adresse_postals (50),
+  adresse_postals VARCHAR (50),
   PRIMARY KEY (user_id),
   FOREIGN KEY (role_id) REFERENCES role(role_id)
 );
@@ -56,7 +56,7 @@ CREATE TABLE plat_allergene (
 CREATE TABLE regime (
   regime_id INT NOT NULL AUTO_INCREMENT,
   libelle VARCHAR (50),
-  PRIMARY KEY (regime_id), 
+  PRIMARY KEY (regime_id) 
 ); 
 
 CREATE TABLE theme (
@@ -104,7 +104,7 @@ CREATE TABLE commande (
   PRIMARY KEY (commande_id),
   FOREIGN KEY (user_id) REFERENCES user (user_id)
 
-)
+);
 
 CREATE TABLE commande_menu (
   commande_id int NOT NULL,

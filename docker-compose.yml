@@ -9,12 +9,9 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - mysql_data:/docker-entrypoint-initdb.d
+      - ./mysql_data:/docker-entrypoint-initdb.d
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
-
-volumes: 
-  mysql_data:
