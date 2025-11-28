@@ -73,10 +73,11 @@ services:
     # Exposition du port 3000 pour accéder à l'API
     ports:
       - 3000:3000
-    # Montage de volume pour le développement
-    # Permet de modifier index.js sans reconstruire l'image
+    # Montage de volumes pour le développement
+    # Permet de modifier les fichiers sans reconstruire l'image
     volumes:
-      - ./index.js:/index.js
+      - .:/app
+      - /app/node_modules
     # Variables d'environnement passées au conteneur
     environment:
       - DB_HOST=db # Nom du service db (résolu automatiquement par Docker)
@@ -86,7 +87,7 @@ services:
       - db
       - mongodb
     # Commande à exécuter au démarrage du conteneur
-    command: npm run dev
+    command: sh -c "cd /app && npm run dev"
 
 # Volumes nommés pour persister les données
 # Ces volumes permettent de conserver les données même après l'arrêt des conteneurs

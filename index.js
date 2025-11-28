@@ -12,6 +12,8 @@ const mongoose = require("mongoose");
 // dotenv : module pour charger les variables d'environnement depuis un fichier .env
 const dotenv = require("dotenv");
 
+
+
 // Configuration de dotenv pour charger les variables d'environnement
 dotenv.config();
 
@@ -54,6 +56,12 @@ mongoose
 const Horaire = require("./models/Horaire");
 const Contact = require("./models/Contact");
 
+// Importation des routes API
+const horairesRouter = require("./routes/api/horaires");
+const contactRouter = require("./routes/api/contact");
+// Utilisation des routes API
+app.use("/api/horaires", horairesRouter);
+app.use("/api/contact", contactRouter);
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données
 app.get("/", async (req, res) => {
