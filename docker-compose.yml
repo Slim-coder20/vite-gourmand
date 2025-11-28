@@ -1,24 +1,94 @@
-services:
-  db:
-    image: mysql:9.5.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: vite_gourmand
+# Configuration Docker Compose pour orchestrer les services de l'application
+# Ce fichier définit les services suivants :
+# - Base de données MySQL (pour les données principales)
+# - Base de données MongoDB (pour Contact et horaires)
+# - Adminer (interface web pour MySQL)
+# - Mongo Express (interface web pour MongoDB)
+# - Serveur Node.js (API Express)
 
+services:
+  # Service de base de données MySQL
+  db:
+    # Image Docker MySQL version 9.5.0
+    image: mysql:9.5.0
+    # Redémarrage automatique du conteneur en cas d'arrêt
+    restart: always
+    # Variables d'environnement pour configurer MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: root # Mot de passe pour l'utilisateur root
+      MYSQL_DATABASE: vite_gourmand # Création automatique de la base de données
+
+    # Mapping des ports : port_hôte:port_conteneur
+    # Le port 3306 (port par défaut de MySQL) est exposé sur la machine hôte
     ports:
       - 3306:3306
+    # Montage de volume pour les scripts d'initialisation
+    # Les fichiers SQL dans ./mysql_data seront exécutés au démarrage de la base
     volumes:
       - ./mysql_data:/docker-entrypoint-initdb.d
-  adminer:
-    image: adminer
+  #Service de base de donnée MongoDB
+  # Utilliseé pour stocker les données de contact et horaires
+  mongodb:
+    image: mongo:8.0
     restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: vite_gourmand
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+  # Service Adminer : interface web pour gérer la base de données MySQL
+  adminer:
+    # Image Docker Adminer (outil de gestion de bases de données)
+    image: adminer
+    # Redémarrage automatique du conteneur en cas d'arrêt
+    restart: always
+    # Exposition du port 8080 pour accéder à l'interface web
     ports:
       - 8080:8080
-
-  server: 
-    image: node:22-alpine
+  # Service Mongo Express : intreface web pour gérer mongodb
+  mongo-express:
+    image: mongo-express:latest
     restart: always
     ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    depends_on:
+      - mongodb
+  # Service serveur Node.js (application Express)
+  server:
+    # Configuration du build de l'image Docker
+    build:
+      context: . # Contexte de build : répertoire courant
+      dockerfile: ./node.dockerfile # Fichier Dockerfile à utiliser
+    # Redémarrage automatique du conteneur en cas d'arrêt
+    restart: always
+    # Exposition du port 3000 pour accéder à l'API
+    ports:
       - 3000:3000
-    command: npm i -silent && npm run dev 
+    # Montage de volume pour le développement
+    # Permet de modifier index.js sans reconstruire l'image
+    volumes:
+      - ./index.js:/index.js
+    # Variables d'environnement passées au conteneur
+    environment:
+      - DB_HOST=db # Nom du service db (résolu automatiquement par Docker)
+      - MONGODB_URI=mongodb://root:root@mongodb:27017/vite_gourmand?authSource=admin # URI de connexion MongoDB
+    # Dépendances : le serveur attend que les bases de données soient prêtes
+    depends_on:
+      - db
+      - mongodb
+    # Commande à exécuter au démarrage du conteneur
+    command: npm run dev
+
+# Volumes nommés pour persister les données
+# Ces volumes permettent de conserver les données même après l'arrêt des conteneurs
+volumes:
+  mongodb_data: # Volume pour les données MongoDB
