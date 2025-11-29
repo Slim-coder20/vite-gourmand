@@ -12,6 +12,7 @@ CREATE TABLE user  (
   role_id int NOT NULL, 
   email VARCHAR (50) NOT NULL,
   password VARCHAR (255) NOT NULL,
+  nom VARCHAR (50),
   prenom VARCHAR (50),
   telephone VARCHAR (50),
   ville VARCHAR (50),

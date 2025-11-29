@@ -48,23 +48,24 @@ const Contact = require("./models/Contact");
 const horairesRouter = require("./routes/api/horaires");
 const contactRouter = require("./routes/api/contact");
 const rolesRouter = require("./routes/api/roles");
+const authRouter = require("./routes/api/auth");
 
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/roles", rolesRouter);
+app.use("/api/auth", authRouter);
 
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données
 app.get("/", async (req, res) => {
+  // Requête SQL pour sélectionner tous les utilisateurs
+  let sql = "SELECT * FROM user";
 
-// Requête SQL pour sélectionner tous les utilisateurs
-let sql = "SELECT * FROM user";
+  // Exécution de la requête (destructuration pour récupérer uniquement les lignes)
+  const [rows] = await pool.query(sql);
 
-// Exécution de la requête (destructuration pour récupérer uniquement les lignes)
-const [rows] = await pool.query(sql);
-
-// Envoi de la réponse avec les données récupérées
+  // Envoi de la réponse avec les données récupérées
   res.status(200).json(rows);
 });
 
