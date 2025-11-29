@@ -27,3 +27,5 @@ build/
 # OS
 Thumbs.db
 
+# Documentation personnelle
+doc/
