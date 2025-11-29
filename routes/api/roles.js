@@ -1,11 +1,11 @@
 const express = require("express");
 const pool = require("../../config/database");
-
+const authenticateToken = require("../../middleware/auth");
 // Création du router Express
 const router = express.Router();
 
 // Route GET pour récupérer tous les rôles
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM role");
     res.status(200).json(rows);
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
 });
 
 // Route GET pour récupérer un rôle par son ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query("SELECT * FROM role WHERE role_id = ?", [
@@ -43,7 +43,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Route POST pour créer un rôle
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   try {
     const { libele } = req.body;
 
@@ -76,7 +76,7 @@ router.post("/", async (req, res) => {
 });
 
 // Route PUT pour mettre à jour un rôle
-router.put("/:id", async (req, res) => {
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { libele } = req.body;
@@ -115,7 +115,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Route DELETE pour supprimer un rôle
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 

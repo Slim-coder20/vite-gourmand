@@ -3,6 +3,7 @@ const express = require("express");
 const pool = require("../../config/database");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const authenticateToken = require("../../middleware/auth");
 // Création du router Express //
 const router = express.Router();
 
@@ -220,29 +221,14 @@ router.post("/login", async (req, res) => {
 
 // La route Post/logout //
 // Cette route permet de déconnecter un utilisateur en vérifiant la validité de son token //
-router.post("/logout", async (req, res) => {
+router.post("/logout", authenticateToken, async (req, res) => {
   try {
-    const { token } = req.body;
-
-    // Vérifier que le token est présent //
-    if (!token) {
-      return res.status(400).json({ message: "Token requis" });
-    }
-
-    // Vérification de la validité du token //
-    const jwtSecret = process.env.JWT_SECRET || "secret_par_defaut_dev_only";
-    try {
-      jwt.verify(token, jwtSecret);
-    } catch (jwtError) {
-      // Si le token est invalide ou expiré, jwt.verify() lance une exception
-      return res.status(401).json({ message: "Token invalide ou expiré" });
-    }
-
-    // Retour de la réponse //
-    // Note : Avec JWT stateless, on ne supprime pas le token en base de données
-    // Le frontend doit supprimer le token du localStorage
-    res.status(200).json({ message: "Déconnexion réussie" });
-    console.log("Déconnexion réussie");
+    // Le token est vérifié par le middleware authenticateToken
+    // req.user contient les infos de l'utilisateur authentifié
+    // On ne fait rien ici, le token est supprimé du frontend par le middleware authenticateToken
+    // Retour de la réponse (sans message)
+    res.status(200).json({});
+    console.log(`Déconnexion réussie pour l'utilisateur : ${req.user.userId} (${req.user.email})`);
   } catch (error) {
     res.status(500).json({
       message: "Erreur lors de la déconnexion de l'utilisateur",
