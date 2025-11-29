@@ -145,4 +145,111 @@ router.post("/register", async (req, res) => {
     console.error("Erreur lors de la création de l'utilisateur :", error);
   }
 });
+
+// la route Post/login //
+// Cette route va nous permettre de connecter un user à son compte en utilisant son email et mot et en cas de mot de passe oublié il
+// rénitialisé avec un lien qui lui sera envoyé par mail //
+
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Vérification que tous les champs sont présents //
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Tous les champs sont requis (email, password)" });
+    }
+
+    // Chercher l'utilisateur par son email //
+    const [userRows] = await pool.query("SELECT * FROM user WHERE email = ?", [
+      email,
+    ]);
+
+    // Vérifier si l'utilisateur existe //
+    if (userRows.length === 0) {
+      return res
+        .status(401)
+        .json({ message: "Email ou mot de passe incorrect" });
+    }
+
+    // Vérification du mot de passe //
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      userRows[0].password
+    );
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ message: "Email ou mot de passe incorrect" });
+    }
+
+    // Création du token JWT //
+    const jwtSecret = process.env.JWT_SECRET || "secret_par_defaut_dev_only";
+    const token = jwt.sign(
+      { userId: userRows[0].user_id, role: userRows[0].role_id },
+      jwtSecret,
+      { expiresIn: "24h" }
+    );
+
+    // Retour de la réponse (sans le mot de passe) //
+    res.status(200).json({
+      message: "Connexion réussie",
+      token: token,
+      user: {
+        user_id: userRows[0].user_id,
+        nom: userRows[0].nom,
+        prenom: userRows[0].prenom,
+        email: userRows[0].email,
+        telephone: userRows[0].telephone,
+        adresse_postals: userRows[0].adresse_postals,
+        ville: userRows[0].ville,
+        pays: userRows[0].pays,
+        role_id: userRows[0].role_id,
+      },
+    });
+    console.log("Connexion réussie");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la connexion de l'utilisateur",
+      error: error.message,
+    });
+    console.error("Erreur lors de la connexion de l'utilisateur :", error);
+  }
+});
+
+// La route Post/logout //
+// Cette route permet de déconnecter un utilisateur en vérifiant la validité de son token //
+router.post("/logout", async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    // Vérifier que le token est présent //
+    if (!token) {
+      return res.status(400).json({ message: "Token requis" });
+    }
+
+    // Vérification de la validité du token //
+    const jwtSecret = process.env.JWT_SECRET || "secret_par_defaut_dev_only";
+    try {
+      jwt.verify(token, jwtSecret);
+    } catch (jwtError) {
+      // Si le token est invalide ou expiré, jwt.verify() lance une exception
+      return res.status(401).json({ message: "Token invalide ou expiré" });
+    }
+
+    // Retour de la réponse //
+    // Note : Avec JWT stateless, on ne supprime pas le token en base de données
+    // Le frontend doit supprimer le token du localStorage
+    res.status(200).json({ message: "Déconnexion réussie" });
+    console.log("Déconnexion réussie");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la déconnexion de l'utilisateur",
+      error: error.message,
+    });
+    console.error("Erreur lors de la déconnexion de l'utilisateur :", error);
+  }
+});
+
 module.exports = router;

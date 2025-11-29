@@ -7,6 +7,11 @@ CREATE TABLE role(
   
 );
 
+-- Insertion des rôles par défaut
+INSERT INTO role (libele) VALUES ('utilisateur');
+INSERT INTO role (libele) VALUES ('admin');
+INSERT INTO role (libele) VALUES ('employe');
+
 CREATE TABLE user  (
   user_id int NOT NULL AUTO_INCREMENT,
   role_id int NOT NULL, 
