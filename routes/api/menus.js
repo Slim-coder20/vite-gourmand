@@ -6,9 +6,62 @@ const pool = require("../../config/database");
 // Route GET pour récupérer tous les menus (publique - pas d'authentification requise)
 router.get("/", async (req, res) => {
   try {
-    // Requete SQL pour récuprérer tous les menus //
-    const [rows] = await pool.query(
-      `SELECT 
+    // 1. Récupérer les paramètres de la requête pour les filtres //
+    const { prix_max, prix_min, theme_id, regime_id, min_personnes } =
+      req.query;
+
+    // 2. Initialiser les tableaux de conditions et paramètres //
+    const conditions = [];
+    const params = [];
+
+    // 3. Ajouter les conditions de filtres si les paramètres existent //
+    if (prix_max) {
+      const prixMaxValue = parseFloat(prix_max);
+      if (!isNaN(prixMaxValue) && prixMaxValue > 0) {
+        conditions.push(
+          "(m.prix_par_personne * m.nombre_personne_minimum) <= ?"
+        );
+        params.push(prixMaxValue);
+      }
+    }
+
+    if (prix_min) {
+      const prixMinValue = parseFloat(prix_min);
+      if (!isNaN(prixMinValue) && prixMinValue > 0) {
+        conditions.push(
+          "(m.prix_par_personne * m.nombre_personne_minimum) >= ?"
+        );
+        params.push(prixMinValue);
+      }
+    }
+
+    if (theme_id) {
+      const themeIdValue = parseInt(theme_id);
+      if (!isNaN(themeIdValue) && themeIdValue > 0) {
+        conditions.push("m.theme_id = ?");
+        params.push(themeIdValue);
+      }
+    }
+
+    if (regime_id) {
+      const regimeIdValue = parseInt(regime_id);
+      if (!isNaN(regimeIdValue) && regimeIdValue > 0) {
+        conditions.push("m.regime_id = ?");
+        params.push(regimeIdValue);
+      }
+    }
+
+    if (min_personnes) {
+      const minPersonnesValue = parseInt(min_personnes);
+      if (!isNaN(minPersonnesValue) && minPersonnesValue > 0) {
+        conditions.push("m.nombre_personne_minimum >= ?");
+        params.push(minPersonnesValue);
+      }
+    }
+
+    // 4. Construire la requête SQL de base //
+    let sql = `
+      SELECT 
         m.menu_id,
         m.titre,
         m.description,
@@ -25,10 +78,19 @@ router.get("/", async (req, res) => {
       FROM menu m
       LEFT JOIN regime r ON m.regime_id = r.regime_id
       LEFT JOIN theme t ON m.theme_id = t.theme_id
-      ORDER BY m.titre ASC`
-    );
+    `;
 
-    // 1. Formater les résultats : convertir la galerie d'images en tableau //
+    // 5. Ajouter WHERE si des conditions existent //
+    if (conditions.length > 0) {
+      sql += " WHERE " + conditions.join(" AND ");
+    }
+
+    sql += " ORDER BY m.titre ASC";
+
+    // 6. Exécuter la requête avec les paramètres //
+    const [rows] = await pool.query(sql, params);
+
+    // 7. Formater les résultats : convertir la galerie d'images en tableau //
     const menusFormatted = rows.map((menu) => ({
       menu_id: menu.menu_id,
       titre: menu.titre,
@@ -51,11 +113,11 @@ router.get("/", async (req, res) => {
       },
     }));
 
-    // 2. Retourner les résultats avec succès //
+    // 8. Retourner les résultats avec succès //
     res.status(200).json(menusFormatted);
     console.log("Menus récupérés avec succès");
   } catch (error) {
-    // 2. Retourner une erreur si la récupération des menus échoue //
+    // Retourner une erreur si la récupération des menus échoue //
     res.status(500).json({
       message: "Erreur lors de la récupération des menus",
       error: error.message,
