@@ -49,12 +49,16 @@ const horairesRouter = require("./routes/api/horaires");
 const contactRouter = require("./routes/api/contact");
 const rolesRouter = require("./routes/api/roles");
 const authRouter = require("./routes/api/auth");
+const commandesRouter = require("./routes/api/commandes");
+const menusRouter = require("./routes/api/menus");
 
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/roles", rolesRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/commandes", commandesRouter);
+app.use("/api/menus", menusRouter);
 
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données

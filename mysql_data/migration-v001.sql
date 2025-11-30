@@ -81,6 +81,8 @@ CREATE TABLE menu (
   theme_id INT NOT NULL,
   description VARCHAR(255),
   quantite_restante INT,
+  image TEXT,
+  conditions TEXT,
   PRIMARY KEY (menu_id),
   FOREIGN KEY (regime_id) REFERENCES regime (regime_id),
   FOREIGN KEY (theme_id) REFERENCES theme (theme_id)
