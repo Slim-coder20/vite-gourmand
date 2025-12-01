@@ -11,7 +11,12 @@ function App() {
       <PromoBanner />
       <Hero />
       <main className="main-content">
-        {/* Votre contenu principal ira ici */}
+        <div className="container">
+          <div className="TitleSection">
+            <h1>Comment ça marche ?</h1>
+          </div>
+          <div className="separator"></div>—
+        </div>
       </main>
       <Footer />
     </div>
