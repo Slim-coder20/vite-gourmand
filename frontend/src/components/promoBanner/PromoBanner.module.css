@@ -1,0 +1,40 @@
+.promoBanner {
+  background-color: var(--color-secondary);
+  padding: var(--spacing-md) var(--spacing-lg);
+  width: 100%;
+  max-width: 100%;
+  text-align: center;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.promoText {
+  color: white;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  margin: 0;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Media queries pour mobile */
+@media (max-width: 768px) {
+  .promoBanner {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .promoText {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .promoBanner {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .promoText {
+    font-size: var(--font-size-xs);
+  }
+}
