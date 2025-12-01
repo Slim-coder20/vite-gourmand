@@ -6,6 +6,7 @@
   text-align: center;
   overflow-x: hidden;
   box-sizing: border-box;
+  box-shadow: var(--shadow-lg);
 }
 
 .promoText {
