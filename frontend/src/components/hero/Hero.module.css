@@ -77,3 +77,39 @@
   transition: all 250ms ease-in-out;
 }
 
+/*  Media queries Hero section  */
+@media (max-width: 768px) {
+  .hero {
+    height: 300px;
+  }
+  .heroTitle {
+    font-size: 24px;
+  }
+  .heroText {
+    font-size: 16px;
+  }
+  .heroButton {
+    font-size: 14px;
+    width: 200px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    height: 200px;
+  }
+  .heroTitle {
+    font-size: 20px;
+  }
+  .heroText {
+    font-size: 14px;
+  }
+  .heroButton {
+    font-size: 12px;
+    width: 150px;
+    height: 30px;
+    margin-bottom: 10px;
+  }
+}
+
