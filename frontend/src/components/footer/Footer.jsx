@@ -19,14 +19,14 @@ function Footer() {
         {/* Logo */}
         <div className={styles.footerLogo}>
           <h1 className={styles.footerLogoTitle}>Vite & Gourmand</h1>
-        </div>
+      </div>
       </div>
 
       {/* Section principale en colonnes */}
       <div className={styles.footerMain}>
         {/* Colonne gauche - Réseaux sociaux */}
         <div className={styles.footerColumn}>
-          <div className={styles.footerSocials}>
+      <div className={styles.footerSocials}>
             <a
               href="https://www.facebook.com/vitegourmand"
               className={styles.footerSocial}
@@ -96,9 +96,9 @@ function Footer() {
             <a href="#cookies" className={styles.footerLink}>
               Cookies
             </a>
-          </div>
-        </div>
       </div>
+        </div>
+        </div>
     </footer>
   );
 }
