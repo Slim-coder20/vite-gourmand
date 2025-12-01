@@ -2,12 +2,12 @@
   display: grid;
   grid-template-columns: 1fr;
   background-color: var(--color-backgroud-footer);
-  padding: var(--spacing-lg) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   box-shadow: var(--shadow-lg);
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   grid-template-areas:
     "footerTop"
     "footerMain";
@@ -173,8 +173,8 @@
 /* Media queries pour mobile */
 @media (max-width: 768px) {
   .footer {
-    padding: var(--spacing-lg) var(--spacing-md);
-    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-sm);
+    gap: var(--spacing-md);
   }
 
   .footerTop {
@@ -238,6 +238,7 @@
   .footerLinks {
     align-items: center;
     gap: var(--spacing-sm);
+    margin-top: 0; /* Supprimer le margin-top en mobile */
   }
 
   .footerLink {
@@ -248,7 +249,12 @@
 
 @media (max-width: 480px) {
   .footer {
-    padding: var(--spacing-md) var(--spacing-sm);
-    gap: var(--spacing-md);
+    padding: var(--spacing-xs);
+    gap: var(--spacing-sm);
+  }
+  .footerColumn {
+    align-items: center !important;
+    gap: var(--spacing-sm) !important;
+    margin-top: 0 !important;
   }
 }
