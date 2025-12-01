@@ -5,6 +5,7 @@
 # - Adminer (interface web pour MySQL)
 # - Mongo Express (interface web pour MongoDB)
 # - Serveur Node.js (API Express)
+# - Frontend React + Vite
 
 services:
   # Service de base de données MySQL
@@ -25,7 +26,7 @@ services:
     # Montage de volume pour les scripts d'initialisation
     # Les fichiers SQL dans ./mysql_data seront exécutés au démarrage de la base
     volumes:
-      - ./mysql_data:/docker-entrypoint-initdb.d
+      - ./back/mysql_data:/docker-entrypoint-initdb.d
   #Service de base de donnée MongoDB
   # Utilliseé pour stocker les données de contact et horaires
   mongodb:
@@ -66,8 +67,8 @@ services:
   server:
     # Configuration du build de l'image Docker
     build:
-      context: . # Contexte de build : répertoire courant
-      dockerfile: ./node.dockerfile # Fichier Dockerfile à utiliser
+      context: ./back # Contexte de build : répertoire backend
+      dockerfile: node.dockerfile # Fichier Dockerfile à utiliser (relatif au context)
     # Redémarrage automatique du conteneur en cas d'arrêt
     restart: always
     # Exposition du port 3000 pour accéder à l'API
@@ -76,7 +77,7 @@ services:
     # Montage de volumes pour le développement
     # Permet de modifier les fichiers sans reconstruire l'image
     volumes:
-      - .:/app
+      - ./back:/app
       - /app/node_modules
     # Variables d'environnement passées au conteneur
     environment:
@@ -89,6 +90,28 @@ services:
       - mongodb
     # Commande à exécuter au démarrage du conteneur
     command: sh -c "cd /app && npm run dev"
+  # Service Frontend React + Vite
+  frontend:
+    # Configuration du build de l'image Docker
+    build:
+      context: ./frontend # Contexte de build : répertoire frontend
+      dockerfile: Dockerfile # Fichier Dockerfile à utiliser
+    # Redémarrage automatique du conteneur en cas d'arrêt
+    restart: always
+    # Exposition du port 5173 pour accéder à l'application frontend
+    ports:
+      - 5173:5173
+    # Montage de volumes pour le développement
+    # Permet de modifier les fichiers sans reconstruire l'image
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    # Variables d'environnement passées au conteneur
+    environment:
+      - VITE_API_URL=http://localhost:3000/api # URL de l'API backend
+    # Dépendances : le frontend attend que le serveur backend soit prêt
+    depends_on:
+      - server
 
 # Volumes nommés pour persister les données
 # Ces volumes permettent de conserver les données même après l'arrêt des conteneurs
