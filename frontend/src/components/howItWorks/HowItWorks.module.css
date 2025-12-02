@@ -184,6 +184,15 @@
   .stepNumber {
     font-size: var(--font-size-base);
   }
+
+  .howItWorksImage {
+    max-width: 100%;
+  }
+
+  .howItWorksButton {
+    width: 100%;
+    max-width: 300px;
+  }
 }
 
 @media (max-width: 480px) {

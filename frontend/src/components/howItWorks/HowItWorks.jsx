@@ -33,7 +33,7 @@ function HowItWorks() {
               </div>
               <div className={styles.stepSeparator}></div>
               <p className={styles.stepDescription}>
-                Il y en a pour tous les goûts :  Découverte, Festif Noël,
+                Il y en a pour tous les goûts : Découverte, Festif Noël,
                 Végétarien, Événement Premium, Pâques.
               </p>
             </div>

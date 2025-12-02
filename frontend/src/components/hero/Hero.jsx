@@ -1,6 +1,6 @@
 import "../../index.css";
 import styles from "./Hero.module.css";
-import heroImage from "../../../public/images/hero1.jpg";
+
 function Hero() {
   return (
     <div className={styles.hero}>
@@ -13,7 +13,7 @@ function Hero() {
         <button className={styles.heroButton}>Commander votre menu</button>
       </div>
       <div className={styles.heroImage}>
-        <img src={heroImage} alt="Hero" />
+        <img src="/images/hero1.jpg" alt="Hero" />
       </div>
     </div>
   );
