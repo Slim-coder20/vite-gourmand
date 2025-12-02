@@ -1,6 +1,9 @@
 -- Script SQL pour insérer des données de test pour les menus
 -- À exécuter dans Adminer ou via la ligne de commande MySQL
 
+-- Forcer l'encodage UTF-8 pour garantir le bon affichage des caractères spéciaux
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 USE vite_gourmand;
 
 -- 1. Insertion des régimes
@@ -137,6 +140,17 @@ INSERT INTO menu (
     6,
     'menu-paques-1.jpg,menu-paques-2.jpg',
     'Commander au minimum 10 jours avant la date de prestation. Disponible en mars et avril. Contient du gluten et du lactose.'
+  ),
+  (
+    'Menu Classique',
+    'Menu classique : salade de saison, poulet rôti aux herbes et tarte aux pommes. Parfait pour une première expérience avec nos services.',
+    10,
+    15.00,
+    1, -- Classique
+    1, -- Classique
+    5,
+    'menu-classique-1.jpg,menu-classique-2.jpg,menu-classique-3.jpg',
+    'Commander au minimum 7 jours avant la date de prestation. Stockage au frais recommandé.'
   )
 ON DUPLICATE KEY UPDATE titre = VALUES(titre);
 

@@ -1,0 +1,27 @@
+.menuListContainer {
+  width: 100%;
+  background-color: var(--color-primary);
+  padding: var(--spacing-3xl) 0;
+}
+
+.menuListContent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-xl);
+}
+
+.menuList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
+  width: 100%;
+}
+.menuListTitle {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  color: var(--color-white);
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-xl);
+}

@@ -91,27 +91,43 @@ router.get("/", async (req, res) => {
     const [rows] = await pool.query(sql, params);
 
     // 7. Formater les résultats : convertir la galerie d'images en tableau //
-    const menusFormatted = rows.map((menu) => ({
-      menu_id: menu.menu_id,
-      titre: menu.titre,
-      description: menu.description,
-      nombre_personne_minimum: menu.nombre_personne_minimum,
-      prix_par_personne: menu.prix_par_personne,
-      prix_total_minimum: menu.prix_total_minimum,
-      quantite_restante: menu.quantite_restante,
-      galerie_images: menu.image
-        ? menu.image.split(",").map((img) => img.trim())
-        : [],
-      conditions: menu.conditions,
-      regime: {
-        regime_id: menu.regime_id,
-        libelle: menu.regime_libelle,
-      },
-      theme: {
-        theme_id: menu.theme_id,
-        libelle: menu.theme_libelle,
-      },
-    }));
+    const menusFormatted = rows.map((menu) => {
+      // Convertir la chaîne d'images en tableau et construire les chemins complets
+      let galerie_images = [];
+      if (menu.image) {
+        galerie_images = menu.image.split(",").map((img) => {
+          const imgTrimmed = img.trim();
+          // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
+          if (imgTrimmed.startsWith("http://") || imgTrimmed.startsWith("https://")) {
+            return imgTrimmed;
+          }
+          // Sinon, on ajoute le chemin de base pour les images locales
+          // Les images doivent être dans /public/images/menus/ ou /images/menus/
+          return imgTrimmed.startsWith("/") ? imgTrimmed : `/images/menus/${imgTrimmed}`;
+        });
+      }
+      
+      return {
+        menu_id: menu.menu_id,
+        titre: menu.titre,
+        description: menu.description,
+        nombre_personne_minimum: menu.nombre_personne_minimum,
+        prix_par_personne: menu.prix_par_personne,
+        prix_total_minimum: menu.prix_total_minimum,
+        quantite_restante: menu.quantite_restante,
+        galerie_images: galerie_images,
+        image_principale: galerie_images.length > 0 ? galerie_images[0] : null, // Première image comme image principale
+        conditions: menu.conditions,
+        regime: {
+          regime_id: menu.regime_id,
+          libelle: menu.regime_libelle,
+        },
+        theme: {
+          theme_id: menu.theme_id,
+          libelle: menu.theme_libelle,
+        },
+      };
+    });
 
     // 8. Retourner les résultats avec succès //
     res.status(200).json(menusFormatted);

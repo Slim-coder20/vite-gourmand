@@ -15,7 +15,13 @@ const pool = mysql2
     database: "vite_gourmand", // Nom de la base de données
     user: "root", // Utilisateur MySQL
     password: "root", // Mot de passe MySQL
+    charset: "utf8mb4", // Encodage UTF-8 pour les caractères spéciaux
   })
   .promise(); // Conversion en promesses pour utiliser async/await
+
+// Forcer l'encodage UTF-8 pour toutes les connexions du pool
+pool.on("connection", (connection) => {
+  connection.query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+});
 
 module.exports = pool;

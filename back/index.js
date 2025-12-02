@@ -23,6 +23,12 @@ app.use(express.json());
 // Middleware CORS pour autoriser les requêtes cross-origin
 app.use(cors());
 
+// Middleware pour forcer l'encodage UTF-8 dans les réponses
+app.use((req, res, next) => {
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  next();
+});
+
 // Importation du pool de connexions MySQL (configuration centralisée)
 const pool = require("./config/database");
 
