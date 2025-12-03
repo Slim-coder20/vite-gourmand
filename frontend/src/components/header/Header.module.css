@@ -58,11 +58,24 @@
   pointer-events: auto;
 }
 
-.navCenter h1 {
+.logoLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  pointer-events: auto;
+  transition: opacity 250ms ease-in-out;
+}
+
+.logoLink:hover {
+  opacity: 0.8;
+}
+
+.logoLink h1 {
   color: var(--color-white);
   font-size: var(--font-size-3xl);
   font-weight: 700;
   margin: 0;
+  pointer-events: auto;
 }
 
 .navRight {
@@ -261,5 +274,93 @@
 
   .header {
     position: relative;
+  }
+}
+
+/* Styles pour les modals */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.modalContent {
+  background-color: var(--color-white);
+  border-radius: 10px;
+  padding: var(--spacing-2xl);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.modalContent .closeButton {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  font-size: var(--font-size-2xl);
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 250ms ease-in-out;
+  z-index: 10;
+}
+
+.modalContent .closeButton:hover {
+  background-color: var(--color-gray-light);
+  transform: rotate(90deg);
+}
+
+/* Styles pour la section utilisateur */
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.userName {
+  color: var(--color-white);
+  font-weight: 500;
+  font-size: var(--font-size-md);
+}
+
+/* Media queries pour les modals */
+@media (max-width: 768px) {
+  .modal {
+    padding: var(--spacing-md);
+  }
+
+  .modalContent {
+    padding: var(--spacing-xl);
+    max-width: 100%;
+  }
+
+  .userSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .userName {
+    font-size: var(--font-size-sm);
   }
 }

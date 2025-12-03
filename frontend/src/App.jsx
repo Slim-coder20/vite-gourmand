@@ -1,23 +1,19 @@
 import "./index.css";
-import Header from "./components/header/Header";
-import PromoBanner from "./components/promoBanner/PromoBanner";
-import Footer from "./components/footer/Footer";
-import Hero from "./components/hero/Hero";
-import HowItWorks from "./components/howItWorks/HowItWorks";
-import MenuList from "./components/menuList/menuList";
+import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   return (
-    <div className="app-container">
-      <Header />
-      <PromoBanner />
-      <Hero />
-      <main className="main-content">
-        <HowItWorks />
-        <MenuList />
-      </main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Routes>
+    </AuthProvider>
   );
 }
 

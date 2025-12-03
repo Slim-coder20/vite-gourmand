@@ -1,10 +1,27 @@
 import "../../index.css";
 import styles from "./Header.module.css";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function Header() {
   // State pour le menu mobile //
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Récupérer les valeurs du contexte d'authentification
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Fonction pour gérer la déconnexion
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsMenuOpen(false); // Fermer le menu mobile après déconnexion
+      navigate("/"); // Rediriger vers la page d'accueil
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
+    }
+  };
 
   return (
     <header className={styles.header}>
@@ -25,7 +42,9 @@ function Header() {
 
           {/* Logo */}
           <div className={styles.navCenter}>
-            <h1>Vite & Gourmand</h1>
+            <Link to="/" className={styles.logoLink}>
+              <h1>Vite & Gourmand</h1>
+            </Link>
           </div>
 
           {/* Menu mobile - visible quand isMenuOpen est true */}
@@ -58,18 +77,42 @@ function Header() {
 
             {/* Boutons à droite */}
             <div className={styles.navRight}>
-              <button
-                className="btn-outline"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Se connecter
-              </button>
-              <button
-                className="btn-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Commencer
-              </button>
+              {isAuthenticated ? (
+                // Si l'utilisateur est connecté
+                <div className={styles.userSection}>
+                  <span className={styles.userName}>
+                    Bonjour, {user?.prenom} {user?.nom}
+                  </span>
+                  <button
+                    className="btn-outline"
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Déconnexion..." : "Déconnexion"}
+                  </button>
+                </div>
+              ) : (
+                // Si l'utilisateur n'est pas connecté
+                <>
+                  <Link
+                    to="/login"
+                    className="btn-outline"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Se connecter
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="btn-primary"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    S'inscrire
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -84,13 +127,35 @@ function Header() {
 
             {/* Boutons à droite */}
             <div className={styles.navRight}>
-              <button className="btn-outline">Se connecter</button>
-              <button className="btn-primary">Commencer</button>
+              {isAuthenticated ? (
+                // Si l'utilisateur est connecté
+                <div className={styles.userSection}>
+                  <span className={styles.userName}>
+                    Bonjour, {user?.prenom} {user?.nom}
+                  </span>
+                  <button
+                    className="btn-outline"
+                    onClick={handleLogout}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Déconnexion..." : "Déconnexion"}
+                  </button>
+                </div>
+              ) : (
+                // Si l'utilisateur n'est pas connecté
+                <>
+                  <Link to="/login" className="btn-outline">
+                    Se connecter
+                  </Link>
+                  <Link to="/register" className="btn-primary">
+                    S'inscrire
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>
       </div>
-      
     </header>
   );
 }

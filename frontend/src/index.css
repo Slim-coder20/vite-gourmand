@@ -144,6 +144,14 @@ a:focus {
 }
 
 /* === BUTTONS === */
+/* Styles pour les Link qui utilisent les classes de boutons */
+a.btn-primary,
+a.btn-outline {
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
 .btn-primary {
   background-color: var(--color-primary);
   color: var(--color-white);

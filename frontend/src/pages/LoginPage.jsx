@@ -1,0 +1,114 @@
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/header/Header";
+import Footer from "../components/footer/Footer";
+import styles from "../styles/auth/Login.module.css";
+
+function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Si déjà connecté, rediriger vers la page d'accueil
+  if (isAuthenticated) {
+    navigate("/");
+    return null;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    // Validation côté client
+    if (!email || !password) {
+      setError("Veuillez remplir tous les champs");
+      setIsLoading(false);
+      return;
+    }
+
+    // Vérification du format de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Veuillez entrer un email valide");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Appeler la fonction login du contexte
+      await login(email, password);
+
+      // Si succès, rediriger vers la page d'accueil
+      navigate("/");
+
+      // Réinitialiser le formulaire
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      setError(error.message || "Erreur lors de la connexion");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="app-container">
+      <Header />
+      <div className={styles.loginContainer}>
+        <h2>Connexion</h2>
+
+        <form onSubmit={handleSubmit} className={styles.loginForm}>
+          {/* Champ Email */}
+          <div className={styles.formGroup}>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="votre@email.com"
+              required
+              disabled={isLoading}
+              className={styles.input}
+            />
+          </div>
+
+          {/* Champ Password */}
+          <div className={styles.formGroup}>
+            <label htmlFor="password">Mot de passe</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Votre mot de passe"
+              required
+              disabled={isLoading}
+              className={styles.input}
+            />
+          </div>
+
+          {/* Affichage des erreurs */}
+          {error && <div className={styles.errorMessage}>{error}</div>}
+
+          {/* Bouton de soumission */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={styles.submitButton}
+          >
+            {isLoading ? "Connexion..." : "Se connecter"}
+          </button>
+        </form>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
+export default LoginPage;
