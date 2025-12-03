@@ -9,6 +9,7 @@ function MenuList() {
 
   useEffect(() => {
     const fetchMenus = async () => {
+      // Récupérer les paramètres de la requête//
       try {
         const response = await fetch("http://localhost:3000/api/menus");
         if (!response.ok) {
@@ -16,6 +17,7 @@ function MenuList() {
             `Erreur HTTP: ${response.status} ${response.statusText}`
           );
         }
+        // récupérer les données de la réponse //
         const data = await response.json();
         // S'assurer que data est un tableau
         if (Array.isArray(data)) {
@@ -34,6 +36,9 @@ function MenuList() {
   }, []);
   return (
     <>
+      {/* Afficher un message de chargement si les données sont en cours de chargement */}
+      {/* Afficher un message d'erreur si une erreur survient */}
+      {/* Afficher la liste des menus */}
       {isLoading ? (
         <div>Loading...</div>
       ) : error ? (
@@ -47,6 +52,7 @@ function MenuList() {
                 <CardMenu key={menu.menu_id} menu={menu} />
               ))}
             </div>
+            <button className={styles.menuListButton}>Commander votre menu</button>
           </div>
         </div>
       )}

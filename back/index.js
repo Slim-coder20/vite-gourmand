@@ -57,6 +57,7 @@ const rolesRouter = require("./routes/api/roles");
 const authRouter = require("./routes/api/auth");
 const commandesRouter = require("./routes/api/commandes");
 const menusRouter = require("./routes/api/menus");
+const avisRouter = require("./routes/api/avis");
 
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
@@ -65,6 +66,7 @@ app.use("/api/roles", rolesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/commandes", commandesRouter);
 app.use("/api/menus", menusRouter);
+app.use("/api/avis", avisRouter);
 
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données
