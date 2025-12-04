@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import styles from "../styles/auth/Register.module.css";
+import { Link } from "react-router-dom";
 
 function RegisterPage() {
   const [nom, setNom] = useState("");
@@ -321,6 +322,10 @@ function RegisterPage() {
           >
             {isLoading ? "Inscription..." : "S'inscrire"}
           </button>
+          <p className={styles.registerLink}>
+            Vous êtes déjà inscris ? connectez-vous{" "}
+            <Link to="/login">connexion</Link>
+          </p>
         </form>
       </div>
       <Footer />

@@ -84,6 +84,14 @@ services:
       - DB_HOST=db # Nom du service db (résolu automatiquement par Docker)
       - MONGODB_URI=mongodb://root:root@mongodb:27017/vite_gourmand?authSource=admin # URI de connexion MongoDB
       - JWT_SECRET=rou2KL6nZnKVBo1UVkOoKIpxVzNl85xrFIdzzPj+eRMKlLfvB6jkt6yI3LLJB9q/DK5AoSQKsytxfa3/Ir3oxw== # Clé secrète pour JWT
+      # Variables d'environnement pour l'envoi d'email (à configurer selon votre service SMTP)
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_SECURE=false
+      - SMTP_USER=slimdev20@gmail.com
+      - SMTP_PASSWORD=whhudfyrccrereze 
+      - SMTP_FROM=slimdev20@gmail.com
+      - FRONTEND_URL=http://localhost:5173
     # Dépendances : le serveur attend que les bases de données soient prêtes
     depends_on:
       - db

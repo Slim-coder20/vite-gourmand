@@ -6,11 +6,7 @@
   align-items: center;
   justify-content: flex-start;
   padding: var(--spacing-3xl) var(--spacing-lg);
-  background: linear-gradient(
-    135deg,
-    var(--color-bg-light) 0%,
-    #f7f1e3 100%
-  );
+  background: linear-gradient(135deg, var(--color-bg-light) 0%, #f7f1e3 100%);
   box-sizing: border-box;
 }
 
@@ -210,6 +206,13 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.registerLink {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  gap: 10px;
 }
 
 /* Responsive */

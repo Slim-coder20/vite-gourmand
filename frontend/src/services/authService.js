@@ -96,7 +96,60 @@ export const logout = async () => {
   }
 };
 
-// Fonctions utilitaires pour gérer le token //
+//Fonction pour demander une rénitialisation du mot-de-passe
+export const forgotPassword = async (email) => {
+  try {
+    const response = await fetch(
+      "http://localhost:3000/api/auth/forgot-password",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      }
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Erreur lors de la renitialisation du mot de passe"
+      );
+    }
+    return data;
+  } catch (error) {
+    throw new Error(
+      error.message || "Erreur lors de la demande de réinitialisation"
+    );
+  }
+};
+
+// Fonction pour rénitialiser le mot de passe //
+export const resetPassword = async (token, newPassword) => {
+  try {
+    const response = await fetch(
+      "http://localhost:3000/api/auth/reset-password",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token, newPassword }),
+      }
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Erreur lors de la réinitialisation du mot de passe"
+      );
+    }
+    return data;
+  } catch (error) {
+    throw new Error(
+      error.message || "Erreur lors de la réinitialisation du mot de passe"
+    );
+  }
+};
 
 // Récupère le token depuis localStorage
 export const getToken = () => {

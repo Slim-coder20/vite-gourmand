@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import styles from "../styles/auth/Login.module.css";
+import { Link } from "react-router-dom"; 
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -104,6 +105,16 @@ function LoginPage() {
           >
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>
+          <div className={styles.loginLinks}>
+            <p>
+              Vous n'avez pas de compte ?{" "}
+              <a href="/register">Créer un compte</a>
+            </p>
+            <p className={styles.forgotPassword}>
+              Mot de passe oublié ?{" "}
+              <Link to="/forgot-password">Réinitialiser le mot de passe</Link>
+            </p>
+          </div>
         </form>
       </div>
       <Footer />
