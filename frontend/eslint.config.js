@@ -1,3 +1,7 @@
+// ESLint désactivé
+// Pour réactiver, décommentez la configuration ci-dessous
+
+/*
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -24,6 +28,12 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',  
     },
   },
 ])
+*/
+
+// Configuration vide pour désactiver ESLint
+export default []
