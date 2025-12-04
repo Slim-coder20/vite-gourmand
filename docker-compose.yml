@@ -25,8 +25,11 @@ services:
       - 3306:3306
     # Montage de volume pour les scripts d'initialisation
     # Les fichiers SQL dans ./mysql_data seront exécutés au démarrage de la base
+    # ⚠️ IMPORTANT : Ces scripts ne s'exécutent QUE lors de la PREMIÈRE création de la base
+    # Si le volume MySQL est supprimé, il faut réexécuter manuellement les scripts
     volumes:
       - ./back/mysql_data:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql # Volume nommé pour persister les données
   #Service de base de donnée MongoDB
   # Utilliseé pour stocker les données de contact et horaires
   mongodb:
@@ -89,7 +92,7 @@ services:
       - SMTP_PORT=587
       - SMTP_SECURE=false
       - SMTP_USER=slimdev20@gmail.com
-      - SMTP_PASSWORD=whhudfyrccrereze 
+      - SMTP_PASSWORD=whhudfyrccrereze
       - SMTP_FROM=slimdev20@gmail.com
       - FRONTEND_URL=http://localhost:5173
     # Dépendances : le serveur attend que les bases de données soient prêtes
@@ -125,3 +128,4 @@ services:
 # Ces volumes permettent de conserver les données même après l'arrêt des conteneurs
 volumes:
   mongodb_data: # Volume pour les données MongoDB
+  mysql_data: # Volume pour les données MySQL (persiste les données entre les redémarrages)

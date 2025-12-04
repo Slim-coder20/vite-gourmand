@@ -74,6 +74,68 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
+// Création de la route GET pour récupérer tous les avis publics //
+router.get("/public", async (req, res) => {
+  try {
+    // Récupérer tous les avis public validés avec les informations de l'utilisateur
+    const [rows] = await pool.query(
+      `SELECT 
+        a.avis_id,
+        a.note,
+        a.description,
+        a.image,
+        a.statut,
+        u.nom as user_nom,
+        u.prenom as user_prenom
+      FROM avis a
+      LEFT JOIN user u ON a.user_id = u.user_id
+      WHERE a.statut = 'validée'
+      ORDER BY a.avis_id DESC
+      LIMIT 10`
+    );
+    // Formater les résultats : formater les chemins d'images comme dans menus.js
+    const avisFormatted = rows.map((avis) => {
+      // Formater le chemin de l'image
+      let imagePath = null;
+      if (avis.image) {
+        const imgTrimmed = avis.image.trim();
+        // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
+        if (
+          imgTrimmed.startsWith("http://") ||
+          imgTrimmed.startsWith("https://")
+        ) {
+          imagePath = imgTrimmed;
+        } else {
+          // Sinon, on ajoute le chemin de base pour les images locales
+          // Les images doivent être dans /public/images/avis/ ou /images/avis/
+          imagePath = imgTrimmed.startsWith("/")
+            ? imgTrimmed
+            : `/images/avis/${imgTrimmed}`;
+        }
+      }
+
+      return {
+        avis_id: avis.avis_id,
+        note: avis.note,
+        description: avis.description,
+        image: imagePath, // Chemin formaté de l'image
+        statut: avis.statut,
+        user_nom: avis.user_nom,
+        user_prenom: avis.user_prenom,
+      };
+    });
+
+    res.status(200).json(avisFormatted);
+    console.log("Avis publics récupérés avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération des avis publics",
+      error: error.message,
+    });
+    console.error("Erreur lors de la récupération des avis publics :", error);
+  }
+});
+
 // Création de la route GET pour récupérer tous les avis
 // Retourne tous les avis validés pour l'affichage public
 router.get("/", authenticateToken, async (req, res) => {

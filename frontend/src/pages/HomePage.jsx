@@ -4,6 +4,7 @@ import Footer from "../components/footer/Footer";
 import Hero from "../components/hero/Hero";
 import HowItWorks from "../components/howItWorks/HowItWorks";
 import MenuList from "../components/menuList/menuList";
+import Avis from "../components/avis/Avis";
 
 function HomePage() {
   return (
@@ -14,6 +15,7 @@ function HomePage() {
       <main className="main-content">
         <HowItWorks />
         <MenuList />
+        <Avis />
       </main>
       <Footer />
     </div>
@@ -21,4 +23,3 @@ function HomePage() {
 }
 
 export default HomePage;
-
