@@ -1,4 +1,4 @@
-// Ce fichier contient les fonctions pour interagir avec l'API d'authentification //
+// Ce fichier contient les fonctions pour interagir avec l'API d'authentification depuis le backend//
 
 // Fonction pour enregistrer un nouvel utilisateur //
 export const register = async (userData) => {
