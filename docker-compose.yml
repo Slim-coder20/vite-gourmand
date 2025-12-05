@@ -30,6 +30,14 @@ services:
     volumes:
       - ./back/mysql_data:/docker-entrypoint-initdb.d
       - mysql_data:/var/lib/mysql # Volume nommé pour persister les données
+    # Healthcheck pour vérifier que MySQL est prêt
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
   #Service de base de donnée MongoDB
   # Utilliseé pour stocker les données de contact et horaires
   mongodb:
@@ -66,6 +74,34 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: admin
     depends_on:
       - mongodb
+  # Conteneur d'initialisation de la base de données
+  # S'exécute une seule fois pour vérifier et initialiser la base si nécessaire
+  db-init:
+    image: mysql:8.0
+    restart: "no" # Ne pas redémarrer automatiquement
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./back/mysql_data:/scripts
+    command: >
+      sh -c "
+        echo '🔍 Vérification de l''état de la base de données...' &&
+        TABLE_COUNT=$$(mysql -h db -uroot -proot vite_gourmand -e 'SHOW TABLES LIKE \"menu\";' 2>/dev/null | tail -n +2 | wc -l | tr -d ' ') &&
+        if [ \"$$TABLE_COUNT\" = \"0\" ]; then
+          echo '📝 Les tables n''existent pas. Initialisation de la base de données...' &&
+          mysql -h db -uroot -proot vite_gourmand < /scripts/migration-v001.sql 2>/dev/null &&
+          mysql -h db -uroot -proot vite_gourmand < /scripts/migration-password-reset.sql 2>/dev/null &&
+          mysql -h db -uroot -proot vite_gourmand < /scripts/migration-avis-description.sql 2>/dev/null &&
+          mysql -h db -uroot -proot vite_gourmand < /scripts/migration-avis-image.sql 2>/dev/null &&
+          mysql -h db -uroot -proot vite_gourmand < /scripts/data-test-menus.sql 2>/dev/null &&
+          mysql -h db -uroot -proot vite_gourmand < /scripts/data-test-avis.sql 2>/dev/null &&
+          echo '✅ Base de données initialisée avec succès !'
+        else
+          echo '✅ Les tables existent déjà. Aucune initialisation nécessaire.'
+        fi
+      "
+
   # Service serveur Node.js (application Express)
   server:
     # Configuration du build de l'image Docker
@@ -74,6 +110,15 @@ services:
       dockerfile: node.dockerfile # Fichier Dockerfile à utiliser (relatif au context)
     # Redémarrage automatique du conteneur en cas d'arrêt
     restart: always
+    # Dépendances : le serveur attend que les bases de données soient prêtes
+    # et que l'initialisation de la base soit terminée
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
     # Exposition du port 3000 pour accéder à l'API
     ports:
       - 3000:3000
@@ -95,10 +140,6 @@ services:
       - SMTP_PASSWORD=whhudfyrccrereze
       - SMTP_FROM=slimdev20@gmail.com
       - FRONTEND_URL=http://localhost:5173
-    # Dépendances : le serveur attend que les bases de données soient prêtes
-    depends_on:
-      - db
-      - mongodb
     # Commande à exécuter au démarrage du conteneur
     command: sh -c "cd /app && npm run dev"
   # Service Frontend React + Vite

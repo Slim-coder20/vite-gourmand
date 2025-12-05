@@ -84,6 +84,6 @@ app.get("/", async (req, res) => {
 // Démarrage du serveur sur le port défini
 // Le serveur écoute les requêtes entrantes sur toutes les interfaces (0.0.0.0)
 // pour permettre les connexions depuis l'extérieur du conteneur Docker
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`server running on port ${port}`);
 });

@@ -157,15 +157,9 @@ WHERE NOT EXISTS (
   SELECT 1 FROM avis WHERE description LIKE 'Menu varié qui plaît%'
 );
 
--- Mettre à jour les avis existants avec les images
-UPDATE avis SET image = 'person-1.jpg' WHERE description LIKE 'Service exceptionnel%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-2.jpg' WHERE description LIKE 'Qualité irréprochable%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-3.jpg' WHERE description LIKE 'Très bon rapport%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-4.jpg' WHERE description LIKE 'Parfait pour nos événements%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-5.jpg' WHERE description LIKE 'Service client réactif%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-6.jpg' WHERE description LIKE 'Cuisine raffinée%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-7.jpg' WHERE description LIKE 'Livraison toujours ponctuelle%' AND (image IS NULL OR image = '');
-UPDATE avis SET image = 'person-8.jpg' WHERE description LIKE 'Menu varié qui plaît%' AND (image IS NULL OR image = '');
+-- Mettre à jour les avis existants avec les images (seulement si la colonne image existe)
+-- Note: Ces UPDATE ne sont nécessaires que si les avis existent déjà sans images
+-- Les INSERT ci-dessus incluent déjà les images, donc ces UPDATE sont optionnels
 
 -- Vérification des avis insérés
 SELECT 
