@@ -93,8 +93,8 @@ function Footer() {
             >
               Politique de confidentialité
             </a>
-            <a href="#cookies" className={styles.footerLink}>
-              Cookies
+            <a href="/contact" className={styles.footerLink}>
+              Contact
             </a>
           </div>
         </div>

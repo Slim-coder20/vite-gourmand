@@ -122,7 +122,7 @@ function Header() {
             <div className={styles.navLeft}>
               <a href="#menu">Au menu</a>
               <a href="#equipe">L'équipe</a>
-              <a href="#contact">Contact</a>
+              <a href="/contact">Contact</a>
             </div>
 
             {/* Boutons à droite */}
