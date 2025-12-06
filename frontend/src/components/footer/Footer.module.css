@@ -11,6 +11,7 @@
   grid-template-areas:
     "footerTop"
     "footerMain";
+  margin-top: auto; /* Pousse le footer vers le bas */
 }
 
 .container {

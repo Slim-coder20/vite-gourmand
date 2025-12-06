@@ -25,24 +25,7 @@
   text-transform: uppercase;
   margin-bottom: var(--spacing-xl);
 }
-.menuListButton {
-  display: block;
-  margin: var(--spacing-3xl) auto 0;
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  border: 2px solid var(--color-white);
-  padding: var(--spacing-lg) var(--spacing-3xl);
-  border-radius: 10px;
-  min-width: 300px;
-  cursor: pointer;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: var(--font-heading);
-  transition: all 250ms ease-in-out;
-}
+
 
 .menuListButton:hover {
   background-color: var(--color-white);

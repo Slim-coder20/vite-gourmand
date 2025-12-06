@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "./menuList.module.css";
 import CardMenu from "../cardMenu/cardMenu";
+import { getPublicMenus } from "../../services/menusService";
 
 function MenuList() {
   const [menus, setMenus] = useState([]);
@@ -9,17 +10,11 @@ function MenuList() {
 
   useEffect(() => {
     const fetchMenus = async () => {
-      // Récupérer les paramètres de la requête//
       try {
-        const response = await fetch("http://localhost:3000/api/menus");
-        if (!response.ok) {
-          throw new Error(
-            `Erreur HTTP: ${response.status} ${response.statusText}`
-          );
-        }
-        // récupérer les données de la réponse //
-        const data = await response.json();
-        // S'assurer que data est un tableau
+        // Utiliser le service pour récupérer les menus
+        const data = await getPublicMenus();
+
+        // S'assurer que data est un tableau (validation de sécurité)
         if (Array.isArray(data)) {
           setMenus(data);
         } else {
@@ -52,7 +47,7 @@ function MenuList() {
                 <CardMenu key={menu.menu_id} menu={menu} />
               ))}
             </div>
-            <button className={styles.menuListButton}>Commander votre menu</button>
+           
           </div>
         </div>
       )}

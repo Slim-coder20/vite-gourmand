@@ -8,6 +8,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ForgetPassword from "./pages/ForgetPassord";
 import Contact from "./pages/Contact";
 import Team from "./pages/Team"; 
+import MenuDetailPage from "./pages/MenuDetailPage";
 function App() {
   return (
     <AuthProvider>
@@ -19,6 +20,7 @@ function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/team" element={<Team />} />
+        <Route path="/menu/:id" element={<MenuDetailPage />} />
       </Routes>
     </AuthProvider>
   );

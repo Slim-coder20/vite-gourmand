@@ -1,7 +1,17 @@
 import "../../index.css";
 import styles from "./cardMenu.module.css";
+import { useNavigate } from "react-router-dom";
 
 function CardMenu({ menu }) {
+  // Hook pour la navigation
+  const navigate = useNavigate();
+
+  // Fonction pour gérer le clic sur le bouton "En savoir plus"
+  const handleClick = () => {
+    // Rediriger vers la page de détail du menu avec son ID
+    navigate(`/menu/${menu.menu_id}`);
+  };
+
   return (
     <div className={styles.cardMenu}>
       {menu.image_principale && (
@@ -21,6 +31,9 @@ function CardMenu({ menu }) {
         {menu.description && (
           <p className={styles.description}>{menu.description}</p>
         )}
+        <button className={styles.buttonCardMenu} onClick={handleClick}>
+          En Savoir plus
+        </button>
       </div>
     </div>
   );

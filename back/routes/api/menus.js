@@ -98,15 +98,20 @@ router.get("/", async (req, res) => {
         galerie_images = menu.image.split(",").map((img) => {
           const imgTrimmed = img.trim();
           // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
-          if (imgTrimmed.startsWith("http://") || imgTrimmed.startsWith("https://")) {
+          if (
+            imgTrimmed.startsWith("http://") ||
+            imgTrimmed.startsWith("https://")
+          ) {
             return imgTrimmed;
           }
           // Sinon, on ajoute le chemin de base pour les images locales
           // Les images doivent être dans /public/images/menus/ ou /images/menus/
-          return imgTrimmed.startsWith("/") ? imgTrimmed : `/images/menus/${imgTrimmed}`;
+          return imgTrimmed.startsWith("/")
+            ? imgTrimmed
+            : `/images/menus/${imgTrimmed}`;
         });
       }
-      
+
       return {
         menu_id: menu.menu_id,
         titre: menu.titre,
@@ -195,7 +200,27 @@ router.get("/:id", async (req, res) => {
       allergenes: plat.allergenes ? plat.allergenes.split(", ") : [],
     }));
 
-    // 5. Construire la réponse avec toutes les informations //
+    // 5. Formater les images : convertir la chaîne en tableau et construire les chemins complets
+    let galerie_images = [];
+    if (menu.image) {
+      galerie_images = menu.image.split(",").map((img) => {
+        const imgTrimmed = img.trim();
+        // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
+        if (
+          imgTrimmed.startsWith("http://") ||
+          imgTrimmed.startsWith("https://")
+        ) {
+          return imgTrimmed;
+        }
+        // Sinon, on ajoute le chemin de base pour les images locales
+        // Les images doivent être dans /public/images/menus/ ou /images/menus/
+        return imgTrimmed.startsWith("/")
+          ? imgTrimmed
+          : `/images/menus/${imgTrimmed}`;
+      });
+    }
+
+    // 6. Construire la réponse avec toutes les informations //
     const response = {
       menu_id: menu.menu_id,
       titre: menu.titre,
@@ -204,9 +229,7 @@ router.get("/:id", async (req, res) => {
       prix_par_personne: menu.prix_par_personne,
       prix_total_minimum: menu.prix_total_minimum,
       quantite_restante: menu.quantite_restante,
-      galerie_images: menu.image
-        ? menu.image.split(",").map((img) => img.trim())
-        : [],
+      galerie_images: galerie_images,
       conditions: menu.conditions,
       regime: {
         regime_id: menu.regime_id,
@@ -219,7 +242,7 @@ router.get("/:id", async (req, res) => {
       plats: plats,
     };
 
-    // 6. Retourner la réponse avec succès //
+    // 7. Retourner la réponse avec succès //
     res.status(200).json(response);
     console.log("Menu récupéré avec succès");
   } catch (error) {

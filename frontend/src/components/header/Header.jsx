@@ -120,7 +120,6 @@ function Header() {
           <div className={styles.desktopMenu}>
             {/* Navigation à gauche */}
             <div className={styles.navLeft}>
-              <a href="#menu">Au menu</a>
               <a href="/team">L'équipe</a>
               <a href="/contact">Contact</a>
             </div>
