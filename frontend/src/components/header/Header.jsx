@@ -64,13 +64,10 @@ function Header() {
 
             {/* Navigation à gauche */}
             <div className={styles.navLeft}>
-              <a href="#menu" onClick={() => setIsMenuOpen(false)}>
-                Au menu
-              </a>
-              <a href="#equipe" onClick={() => setIsMenuOpen(false)}>
+              <a href="/team" onClick={() => setIsMenuOpen(false)}>
                 L'équipe
               </a>
-              <a href="#contact" onClick={() => setIsMenuOpen(false)}>
+              <a href="/contact" onClick={() => setIsMenuOpen(false)}>
                 Contact
               </a>
             </div>
