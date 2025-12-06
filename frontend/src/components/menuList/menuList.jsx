@@ -39,7 +39,7 @@ function MenuList() {
       ) : error ? (
         <div>Error: {error}</div>
       ) : (
-        <div className={styles.menuListContainer}>
+        <div id="menus-section" className={styles.menuListContainer}>
           <div className={styles.menuListContent}>
             <h2 className={styles.menuListTitle}>Nos menus</h2>
             <div className={styles.menuList}>
@@ -47,7 +47,6 @@ function MenuList() {
                 <CardMenu key={menu.menu_id} menu={menu} />
               ))}
             </div>
-           
           </div>
         </div>
       )}
