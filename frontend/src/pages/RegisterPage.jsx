@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/header/Header";
@@ -25,10 +25,12 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   // Si déjà connecté, rediriger vers la page d'accueil
-  if (isAuthenticated) {
-    navigate("/");
-    return null;
-  }
+  // Utiliser useEffect pour éviter d'appeler navigate() pendant le rendu
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
