@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../config/database");
 const authenticateToken = require("../../middleware/auth");
+const { sendOrderConfirmationEmail } = require("../../config/email");
 
 // Route GET pour récupérer toutes les commandes depuis l'espace utilisateur //
 router.get("/", authenticateToken, async (req, res) => {
@@ -167,11 +168,12 @@ router.post("/", authenticateToken, async (req, res) => {
         prix_menu, 
         nombre_personne, 
         prix_livraison, 
+        adresse_prestation,
         statut, 
         pret_materiel, 
         restitution_materiel, 
         user_id
-      ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, 'en attente', ?, ?, ?)`,
+      ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, 'en attente', ?, ?, ?)`,
       [
         numeroCommande,
         date_prestation,
@@ -179,6 +181,7 @@ router.post("/", authenticateToken, async (req, res) => {
         prixMenu,
         nombre_personne,
         prixLivraison,
+        adresse_prestation,
         pret_materiel,
         restitution_materiel,
         userId,
@@ -205,7 +208,20 @@ router.post("/", authenticateToken, async (req, res) => {
       [result.insertId]
     );
 
-    // 16. Retourner la réponse
+    // 16. Envoyer l'email de confirmation
+    try {
+      await sendOrderConfirmationEmail(user, commandeRows[0]);
+      console.log("Email de confirmation envoyé avec succès");
+    } catch (emailError) {
+      // Ne pas faire échouer la commande si l'email échoue
+      // On log l'erreur mais on continue
+      console.error(
+        "Erreur lors de l'envoi de l'email de confirmation :",
+        emailError
+      );
+    }
+
+    // 17. Retourner la réponse
     res.status(201).json({
       message: "Commande créée avec succès",
       commande: commandeRows[0],
@@ -480,6 +496,3 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

@@ -1,0 +1,101 @@
+.stepContainer {
+  background-color: var(--color-bg-light);
+  padding: var(--spacing-3xl) 0;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-3xl);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.stepTitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0;
+  margin-bottom: var(--spacing-2xl);
+  letter-spacing: 1px;
+}
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+  padding: 0 var(--spacing-xl);
+  width: 100%;
+  box-sizing: border-box; 
+}
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  margin: 0;
+  margin-bottom: var(--spacing-xl);
+  letter-spacing: 1px;
+}
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+  box-sizing: border-box;
+}
+.label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-primary);
+} 
+.input {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background-color: var(--color-bg-light);
+  box-sizing: border-box;
+}
+.required {
+  color: var(--color-error);
+  font-weight: 600;
+  margin-left: var(--spacing-xs);
+}
+.errorMessage {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-body);
+  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+.helpText {
+  font-size: var(--font-size-sm);
+  font-family: var(--font-body);
+  color: var(--color-text-medium);
+  margin-top: var(--spacing-xs);
+  font-style: italic;
+  line-height: 1.5;
+}
+.errorMessage::before {
+  content: "⚠";
+  font-size: var(--font-size-base);
+  color: var(--color-error);
+  margin-right: var(--spacing-xs);
+}
+
+.loading {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-primary);
+  text-align: center;
+  margin-top: var(--spacing-2xl);
+}

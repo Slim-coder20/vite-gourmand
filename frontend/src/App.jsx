@@ -9,6 +9,7 @@ import ForgetPassword from "./pages/ForgetPassord";
 import Contact from "./pages/Contact";
 import Team from "./pages/Team"; 
 import MenuDetailPage from "./pages/MenuDetailPage";
+import CommandPage from "./pages/CommandPage";
 function App() {
   return (
     <AuthProvider>
@@ -21,6 +22,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/team" element={<Team />} />
         <Route path="/menu/:id" element={<MenuDetailPage />} />
+        <Route path="/commande/:menu_id?" element={<CommandPage />} />
       </Routes>
     </AuthProvider>
   );

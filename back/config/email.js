@@ -153,7 +153,262 @@ const sendPasswordResetEmail = async (email, resetToken, frontendUrl) => {
   }
 };
 
+// Fonction pour envoyer un email de confirmation de commande
+const sendOrderConfirmationEmail = async (user, commande) => {
+  // Formater la date de prestation
+  const datePrestation = new Date(commande.date_prestation);
+  const dateFormatee = datePrestation.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  // Extraire l'heure de livraison
+  const heureLivraison = commande.heure_livraison
+    ? new Date(commande.heure_livraison).toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "Non spécifiée";
+
+  // Calculer le total
+  const prixTotal = (commande.prix_menu || 0) + (commande.prix_livraison || 0);
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: user.email,
+    subject: `Confirmation de commande ${commande.numero_commande} - Vite Gourmand`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 10px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #d4a574;
+            }
+            .content {
+              background-color: white;
+              padding: 20px;
+              border-radius: 5px;
+              margin-bottom: 20px;
+            }
+            .success-badge {
+              background-color: #d4edda;
+              color: #155724;
+              padding: 10px;
+              border-radius: 5px;
+              text-align: center;
+              font-weight: bold;
+              margin-bottom: 20px;
+            }
+            .order-details {
+              background-color: #f8f9fa;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+            }
+            .order-details h3 {
+              margin-top: 0;
+              color: #d4a574;
+            }
+            .detail-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 0;
+              border-bottom: 1px solid #e0e0e0;
+            }
+            .detail-row:last-child {
+              border-bottom: none;
+            }
+            .detail-label {
+              font-weight: 500;
+            }
+            .detail-value {
+              color: #333;
+            }
+            .price-section {
+              background-color: #fff3cd;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+              border-left: 4px solid #ffc107;
+            }
+            .total-price {
+              font-size: 20px;
+              font-weight: bold;
+              color: #d4a574;
+              text-align: center;
+              margin-top: 10px;
+            }
+            .footer {
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+              margin-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">🍽️ Vite Gourmand</div>
+            </div>
+            <div class="content">
+              <div class="success-badge">
+                ✅ Votre commande a été confirmée avec succès !
+              </div>
+              
+              <h2>Confirmation de commande</h2>
+              <p>Bonjour ${user.prenom} ${user.nom},</p>
+              <p>Nous avons bien reçu votre commande. Vous trouverez ci-dessous tous les détails de votre réservation.</p>
+              
+              <div class="order-details">
+                <h3>Détails de la commande</h3>
+                <div class="detail-row">
+                  <span class="detail-label">Numéro de commande :</span>
+                  <span class="detail-value"><strong>${
+                    commande.numero_commande
+                  }</strong></span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Date de commande :</span>
+                  <span class="detail-value">${new Date(
+                    commande.date_commande
+                  ).toLocaleDateString("fr-FR")}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Menu commandé :</span>
+                  <span class="detail-value">${
+                    commande.menu_titre || "Menu"
+                  }</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Nombre de personnes :</span>
+                  <span class="detail-value">${
+                    commande.nombre_personne
+                  } personne(s)</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Date de prestation :</span>
+                  <span class="detail-value">${dateFormatee}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Heure de livraison :</span>
+                  <span class="detail-value">${heureLivraison}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Adresse de livraison :</span>
+                  <span class="detail-value">${
+                    commande.adresse_prestation || "Non spécifiée"
+                  }</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Statut :</span>
+                  <span class="detail-value"><strong>${
+                    commande.statut || "en attente"
+                  }</strong></span>
+                </div>
+              </div>
+              
+              <div class="price-section">
+                <h3>Récapitulatif des prix</h3>
+                <div class="detail-row">
+                  <span class="detail-label">Prix du menu :</span>
+                  <span class="detail-value">${(
+                    commande.prix_menu || 0
+                  ).toFixed(2)}€</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Prix de livraison :</span>
+                  <span class="detail-value">${(
+                    commande.prix_livraison || 0
+                  ).toFixed(2)}€</span>
+                </div>
+                <div class="total-price">
+                  Total : ${prixTotal.toFixed(2)}€
+                </div>
+              </div>
+              
+              <p style="margin-top: 20px;">
+                <strong>Prochaines étapes :</strong><br>
+                Votre commande est en cours de traitement. Vous recevrez une notification lorsque votre commande sera prête.
+              </p>
+              
+              <p>
+                Si vous avez des questions concernant votre commande, n'hésitez pas à nous contacter.
+              </p>
+            </div>
+            <div class="footer">
+              <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+              <p>&copy; ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Confirmation de commande ${commande.numero_commande} - Vite Gourmand
+      
+      Bonjour ${user.prenom} ${user.nom},
+      
+      Nous avons bien reçu votre commande. Voici les détails :
+      
+      Numéro de commande : ${commande.numero_commande}
+      Date de commande : ${new Date(commande.date_commande).toLocaleDateString(
+        "fr-FR"
+      )}
+      Menu : ${commande.menu_titre || "Menu"}
+      Nombre de personnes : ${commande.nombre_personne}
+      Date de prestation : ${dateFormatee}
+      Heure de livraison : ${heureLivraison}
+      Adresse : ${commande.adresse_prestation || "Non spécifiée"}
+      Statut : ${commande.statut || "en attente"}
+      
+      Récapitulatif des prix :
+      - Prix du menu : ${(commande.prix_menu || 0).toFixed(2)}€
+      - Prix de livraison : ${(commande.prix_livraison || 0).toFixed(2)}€
+      - Total : ${prixTotal.toFixed(2)}€
+      
+      Votre commande est en cours de traitement.
+      
+      © ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email de confirmation de commande envoyé :", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email de confirmation :", error);
+    throw error;
+  }
+};
+
 module.exports = {
   transporter,
   sendPasswordResetEmail,
+  sendOrderConfirmationEmail,
 };
