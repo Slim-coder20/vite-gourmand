@@ -23,6 +23,8 @@ function Header() {
     }
   };
 
+
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -64,6 +66,9 @@ function Header() {
 
             {/* Navigation à gauche */}
             <div className={styles.navLeft}>
+              <Link to="/" onClick={() => setIsMenuOpen(false)}>
+                <h2>Vite & Gourmand</h2>
+              </Link>
               <a href="/team" onClick={() => setIsMenuOpen(false)}>
                 L'équipe
               </a>
