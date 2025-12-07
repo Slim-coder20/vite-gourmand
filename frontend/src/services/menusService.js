@@ -2,10 +2,36 @@
  * Service pour gérer les appels API liés au menus
  */
 
-// Fonction pour récupérer tous les menus (public sans authentification )
-export const getPublicMenus = async () => {
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+// Fonction pour récupérer tous les menus avec filtres optionnels (public sans authentification)
+export const getPublicMenus = async (filters = {}) => {
   try {
-    const response = await fetch("http://localhost:3000/api/menus", {
+    // Construire les paramètres de requête depuis l'objet filters
+    const queryParams = new URLSearchParams();
+
+    if (filters.prix_max) {
+      queryParams.append("prix_max", filters.prix_max);
+    }
+    if (filters.prix_min) {
+      queryParams.append("prix_min", filters.prix_min);
+    }
+    if (filters.theme_id) {
+      queryParams.append("theme_id", filters.theme_id);
+    }
+    if (filters.regime_id) {
+      queryParams.append("regime_id", filters.regime_id);
+    }
+    if (filters.min_personnes) {
+      queryParams.append("min_personnes", filters.min_personnes);
+    }
+
+    // Construire l'URL avec les paramètres de requête
+    const url = `${API_URL}/menus${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
