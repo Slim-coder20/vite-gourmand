@@ -114,6 +114,8 @@ CREATE TABLE commande (
 
 );
 
+
+
 CREATE TABLE commande_menu (
   commande_id int NOT NULL,
   menu_id int NOT NULL,

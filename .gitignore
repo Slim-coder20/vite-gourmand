@@ -30,3 +30,16 @@ Thumbs.db
 
 # Documentation personnelle
 doc/
+
+# Fichiers de documentation à la racine
+DOCUMENTATION_PROJET.md
+EXPLICATION_ENONCE_COMMANDE.md
+GUIDE_COMMANDE.md
+GUIDE_COMPOSANTS_COMMANDE.md
+GUIDE_PATTERN_REUTILISABLE.md
+GUIDE_PROPS_REACT.md
+README.md
+
+# Scripts shell
+init-database.sh
+cleanup-docker.sh

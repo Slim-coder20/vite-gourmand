@@ -74,6 +74,109 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
+// Création de la route POST pour créer un avis depuis une commande
+router.post("/commande/:commandeId", authenticateToken, async (req, res) => {
+  try {
+    const { commandeId } = req.params;
+    const userId = req.user.userId;
+
+    // 1. Vérifier que la commande existe et appartient au user authentifié //
+    const [commandeRows] = await pool.query(
+      "SELECT * FROM commande WHERE commande_id = ? AND user_id = ?",
+      [commandeId, userId]
+    );
+    if (commandeRows.length === 0) {
+      return res.status(404).json({
+        message:
+          "Commande non trouvée ou vous n'avez pas accès à cette commande",
+      });
+    }
+
+    const commande = commandeRows[0];
+
+    // 2. Vérification que la commande est "terminée" //
+    // l'avis ne peut être créé que si la commande est "terminée"
+    if (commande.statut !== "terminée") {
+      return res.status(403).json({
+        message: "Vous ne pouvez donner un avis que pour une commande terminée",
+      });
+    }
+
+    // 3. Vérifier qu'un avis n'existe pas déjà pour cette commande //
+    const [existingAvis] = await pool.query(
+      "SELECT * FROM avis WHERE commande_id = ?",
+      [commandeId]
+    );
+    if (existingAvis.length > 0) {
+      return res.status(409).json({
+        message: "Un avis existe déjà pour cette commande",
+      });
+    }
+
+    // 4. Récupération et validation des données du body //
+    const { note, description } = req.body;
+
+    // Vérification que note et description sont présents
+    if (!note || !description) {
+      return res.status(400).json({
+        message: "Les champs note et description sont requis",
+      });
+    }
+
+    // Vérification que la note est comprise entre 1 et 5
+    const noteNum = parseInt(note);
+    if (isNaN(noteNum) || noteNum < 1 || noteNum > 5) {
+      return res.status(400).json({
+        message: "La note doit être un nombre compris entre 1 et 5",
+      });
+    }
+
+    // 5. Insertion de l'avis dans la base de données //
+    // Statut par défaut : "non validée" (sera validé par un admin ensuite)
+    const [result] = await pool.query(
+      "INSERT INTO avis (note, description, statut, user_id, commande_id) VALUES (?, ?, 'non validée', ?, ?)",
+      [noteNum, description, userId, commandeId]
+    );
+
+    // 6. Récupération de l'avis créé //
+    const [avisRows] = await pool.query(
+      "SELECT * FROM avis WHERE avis_id = ?",
+      [result.insertId]
+    );
+
+    if (avisRows.length === 0) {
+      return res.status(500).json({
+        message: "Erreur lors de la récupération de l'avis créé",
+      });
+    }
+
+    const avis = avisRows[0];
+
+    // 7. Retourner la réponse avec l'avis créé //
+    res.status(201).json({
+      message: "Avis créé avec succès pour la commande",
+      avis: {
+        avis_id: avis.avis_id,
+        note: avis.note,
+        description: avis.description,
+        statut: avis.statut,
+        user_id: avis.user_id,
+        commande_id: avis.commande_id,
+      },
+    });
+    console.log("Avis créé avec succès pour la commande");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la création de l'avis depuis la commande",
+      error: error.message,
+    });
+    console.error(
+      "Erreur lors de la création de l'avis depuis la commande :",
+      error
+    );
+  }
+});
+
 // Création de la route GET pour récupérer tous les avis publics //
 router.get("/public", async (req, res) => {
   try {

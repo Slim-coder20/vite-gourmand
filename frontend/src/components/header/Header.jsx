@@ -75,6 +75,9 @@ function Header() {
               <a href="/contact" onClick={() => setIsMenuOpen(false)}>
                 Contact
               </a>
+              <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                Mon compte
+              </Link>
             </div>
 
             {/* Boutons à droite */}
@@ -141,6 +144,10 @@ function Header() {
                   >
                     {isLoading ? "Déconnexion..." : "Déconnexion"}
                   </button>
+                  {/* On affiche un menu mon compte permmettant d'accéder au compte du user */}
+                  <div className={styles.userMenu}>
+                    <Link to="/dashboard" className="btn-outline">Mon compte</Link>
+                  </div>
                 </div>
               ) : (
                 // Si l'utilisateur n'est pas connecté

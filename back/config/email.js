@@ -407,8 +407,179 @@ const sendOrderConfirmationEmail = async (user, commande) => {
   }
 };
 
+// Fonction pour envoyer un email de notification d'avis suite à une commande terminée
+const sendAvisConfirmationEmail = async (user, commande, frontendUrl) => {
+  // Construire le lien vers le dashboard pour créer un avis
+  const dashboardLink = `${frontendUrl}/dashboard?commande=${commande.commande_id}`;
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: user.email,
+    subject: `Donnez votre avis sur votre commande ${commande.numero_commande} - Vite Gourmand`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 10px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #d4a574;
+            }
+            .content {
+              background-color: white;
+              padding: 20px;
+              border-radius: 5px;
+              margin-bottom: 20px;
+            }
+            .success-badge {
+              background-color: #d4edda;
+              color: #155724;
+              padding: 10px;
+              border-radius: 5px;
+              text-align: center;
+              font-weight: bold;
+              margin-bottom: 20px;
+            }
+            .order-info {
+              background-color: #f8f9fa;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+              text-align: center;
+            }
+            .order-info h3 {
+              margin-top: 0;
+              color: #d4a574;
+            }
+            .order-number {
+              font-size: 18px;
+              font-weight: bold;
+              color: #333;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 30px;
+              background-color: #d4a574;
+              color: white;
+              text-decoration: none;
+              border-radius: 5px;
+              margin: 20px 0;
+              font-weight: bold;
+            }
+            .button:hover {
+              background-color: #c49564;
+            }
+            .footer {
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+              margin-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">🍽️ Vite Gourmand</div>
+            </div>
+            <div class="content">
+              <div class="success-badge">
+                ✅ Votre commande est terminée !
+              </div>
+              
+              <h2>Partagez votre expérience</h2>
+              <p>Bonjour ${user.prenom} ${user.nom},</p>
+              <p>Votre commande <strong>${
+                commande.numero_commande
+              }</strong> est maintenant terminée.</p>
+              <p>Votre avis est important pour nous ! Il nous aide à améliorer nos services et à offrir une meilleure expérience à tous nos clients.</p>
+              
+              <div class="order-info">
+                <h3>Commande concernée</h3>
+                <p class="order-number">${commande.numero_commande}</p>
+              </div>
+              
+              <p style="text-align: center; margin-top: 20px;">
+                Cliquez sur le bouton ci-dessous pour vous connecter à votre compte et donner votre avis :
+              </p>
+              
+              <div style="text-align: center;">
+                <a href="${dashboardLink}" class="button">Donner mon avis</a>
+              </div>
+              
+              <p style="text-align: center; margin-top: 20px;">
+                Ou copiez-collez ce lien dans votre navigateur :<br>
+                <span style="word-break: break-all; color: #0066cc; font-size: 12px;">${dashboardLink}</span>
+              </p>
+              
+              <p style="margin-top: 20px;">
+                Merci de prendre quelques instants pour partager votre expérience avec nous.
+              </p>
+            </div>
+            <div class="footer">
+              <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+              <p>&copy; ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Donnez votre avis sur votre commande ${
+        commande.numero_commande
+      } - Vite Gourmand
+      
+      Bonjour ${user.prenom} ${user.nom},
+      
+      Votre commande ${commande.numero_commande} est maintenant terminée.
+      
+      Votre avis est important pour nous ! Il nous aide à améliorer nos services et à offrir une meilleure expérience à tous nos clients.
+      
+      Cliquez sur le lien suivant pour vous connecter à votre compte et donner votre avis :
+      ${dashboardLink}
+      
+      Merci de prendre quelques instants pour partager votre expérience avec nous.
+      
+      © ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email d'invitation à donner un avis envoyé :", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error(
+      "Erreur lors de l'envoi de l'email d'invitation à donner un avis :",
+      error
+    );
+    throw error;
+  }
+};
+
 module.exports = {
   transporter,
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
+  sendAvisConfirmationEmail,
 };

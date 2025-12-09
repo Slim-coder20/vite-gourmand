@@ -10,6 +10,7 @@ import Contact from "./pages/Contact";
 import Team from "./pages/Team"; 
 import MenuDetailPage from "./pages/MenuDetailPage";
 import CommandPage from "./pages/CommandPage";
+import DashboardPage from "./pages/DashboardPage";
 function App() {
   return (
     <AuthProvider>
@@ -23,6 +24,7 @@ function App() {
         <Route path="/team" element={<Team />} />
         <Route path="/menu/:id" element={<MenuDetailPage />} />
         <Route path="/commande/:menu_id?" element={<CommandPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
       </Routes>
     </AuthProvider>
   );

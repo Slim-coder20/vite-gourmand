@@ -36,6 +36,55 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
+// Route pour récupérer l'historique des statuts d'une commande //
+router.get("/:id/history", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    // 1. Vérifier que la commande existe et appartient à l'utilisateur authentifié //
+    const [commandeRows] = await pool.query(
+      "SELECT * FROM commande WHERE commande_id = ? AND user_id = ?",
+      [id, userId]
+    );
+    if (commandeRows.length === 0) {
+      return res.status(404).json({
+        message:
+          "Commande non trouvée ou vous n'avez pas accès à cette commande",
+      });
+    }
+    // 2. Vérification du statut de la commande //
+    // L'utilisateur peut accéder au suivi uniquement si la commande est "accepté" ou supérieur
+    if (
+      commandeRows[0].statut === "en attente" ||
+      commandeRows[0].statut === "annulée"
+    ) {
+      return res.status(403).json({
+        message:
+          "Le suivi de commande n'est disponible qu'une fois la commande acceptée",
+      });
+    }
+    // 3. Récupérer l'historique des statuts de la commande //
+    const [rows] = await pool.query(
+      "SELECT * FROM commande_statut_history WHERE commande_id = ? ORDER BY date_modification ASC",
+      [id]
+    );
+    // 4. Retourner l'historique des statuts de la commande //
+    // Retourner un tableau vide si aucun historique n'existe (c'est normal)
+    res.status(200).json(rows);
+    console.log("Historique des statuts récupéré avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "Erreur lors de la récupération de l'historique des statuts de la commande",
+      error: error.message,
+    });
+    console.error(
+      "Erreur lors de la récupération de l'historique des statuts de la commande :",
+      error
+    );
+  }
+});
+
 // Route pour retourner une commande spécifique via son ID //
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
@@ -194,6 +243,12 @@ router.post("/", authenticateToken, async (req, res) => {
       [result.insertId, menu_id]
     );
 
+    // 14.5. Enregistrer le statut initial dans l'historique
+    await pool.query(
+      "INSERT INTO commande_statut_history (commande_id, ancien_statut, nouveau_statut, user_id_modification) VALUES (?, NULL, ?, ?)",
+      [result.insertId, "en attente", userId]
+    );
+
     // 15. Récupérer la commande créée avec les détails
     const [commandeRows] = await pool.query(
       `SELECT 
@@ -259,8 +314,15 @@ router.put("/:id", authenticateToken, async (req, res) => {
     // 2. Récupération des données de la commande //
     const commande = commandeRows[0];
 
-    // 3. Vérification que la commande est en attente (seules les commandes en attente peuvent être modifiées) //
-    if (commande.statut !== "en attente") {
+    // 3. Vérification que la commande peut être modifiée (statut < "accepté") //
+    // modification possible tant qu'un employé n'a pas passé la commande en "accepté"
+    if (
+      commande.statut === "accepté" ||
+      commande.statut === "en préparation" ||
+      commande.statut === "en livraison" ||
+      commande.statut === "terminée" ||
+      commande.statut === "annulée"
+    ) {
       return res.status(400).json({
         message: `Impossible de modifier une commande avec le statut "${commande.statut}". Seules les commandes en attente peuvent être modifiées.`,
       });
@@ -399,6 +461,14 @@ router.put("/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Commande non trouvée" });
     }
 
+    // 9.5. Enregistrer le changement de statut dans l'historique si le statut a changé
+    if (statut !== undefined && statut !== commande.statut) {
+      await pool.query(
+        "INSERT INTO commande_statut_history (commande_id, ancien_statut, nouveau_statut, user_id_modification) VALUES (?, ?, ?, ?)",
+        [id, commande.statut, newStatut, userId]
+      );
+    }
+
     // 10. Récupération de la commande mise à jour avec les détails //
     const [updatedCommandeRows] = await pool.query(
       `SELECT 
@@ -449,8 +519,15 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
     const commande = commandeRows[0];
 
-    // 2. Vérifier que la commande peut être annulée (statut "en attente" uniquement)
-    if (commande.statut !== "en attente") {
+    // 2. Vérifier que la commande peut être annulée (statut < "accepté") //
+    // annulation possible tant qu'un employé n'a pas passé la commande en "accepté"
+    if (
+      commande.statut === "accepté" ||
+      commande.statut === "en préparation" ||
+      commande.statut === "en livraison" ||
+      commande.statut === "terminée" ||
+      commande.statut === "annulée"
+    ) {
       return res.status(400).json({
         message: `Impossible d'annuler une commande avec le statut "${commande.statut}". Seules les commandes en attente peuvent être annulées.`,
       });
@@ -465,6 +542,12 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Commande non trouvée" });
     }
+
+    // 3.5. Enregistrer l'annulation dans l'historique
+    await pool.query(
+      "INSERT INTO commande_statut_history (commande_id, ancien_statut, nouveau_statut, user_id_modification) VALUES (?, ?, ?, ?)",
+      [id, commande.statut, "annulée", userId]
+    );
 
     // 4. Récupérer la commande annulée pour confirmation
     const [cancelledRows] = await pool.query(
