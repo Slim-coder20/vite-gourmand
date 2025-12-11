@@ -1,0 +1,226 @@
+/* Employee Home Page Styles */
+
+.container {
+  padding: 2rem;
+  min-height: 80vh;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--color-text);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: var(--font-size-lg);
+}
+
+.error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #d32f2f;
+}
+
+/* Statistiques */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.statCard h3 {
+  margin: 0 0 1rem 0;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.statValue.pending {
+  color: #ff6b6b;
+}
+
+.statValue.preparing {
+  color: #4ecdc4;
+}
+
+.statValue.reviews {
+  color: #ffe66d;
+}
+
+.statValue.total {
+  color: #95e1d3;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+}
+
+.emptyMessage {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  padding: 1rem;
+}
+
+/* Commandes récentes */
+.commandesGrid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.commandeCard {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  transition: box-shadow 0.2s ease;
+}
+
+.commandeCard:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.commandeInfo {
+  flex: 1;
+}
+
+.commandeInfo strong {
+  display: block;
+  font-size: var(--font-size-lg);
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.commandeInfo p {
+  margin: 0.25rem 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.commandeButton {
+  margin-left: 1rem;
+}
+
+/* Avis en attente */
+.avisGrid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.avisCard {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  background: white;
+  transition: box-shadow 0.2s ease;
+}
+
+.avisCard:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avisCard p {
+  margin: 0.5rem 0;
+  color: var(--color-text);
+}
+
+.avisCard strong {
+  color: var(--color-text);
+}
+
+.avisButton {
+  margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .commandeCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .commandeButton {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  .title {
+    font-size: var(--font-size-xl);
+    margin-bottom: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .statCard {
+    padding: 1rem;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+}

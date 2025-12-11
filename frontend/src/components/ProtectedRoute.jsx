@@ -1,0 +1,61 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+/**
+ * Composant pour protéger les routes nécessitant une authentification
+ * @param {Object} props
+ * @param {React.ReactElement} props.children - Le composant à afficher si autorisé
+ * @param {number} props.requiredRoleId - Le role_id requis (optionnel). Si non spécifié, seule l'authentification est requise
+ * @returns {React.ReactElement|null}
+ */
+function ProtectedRoute({ children, requiredRoleId = null }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Ne pas rediriger pendant le chargement
+    if (isLoading) {
+      return;
+    }
+
+    // Si non authentifié, rediriger vers login
+    if (!isAuthenticated || !user) {
+      navigate("/login");
+      return;
+    }
+
+    // Si un rôle spécifique est requis
+    if (requiredRoleId !== null) {
+      if (user.role_id !== requiredRoleId) {
+        // Si ce n'est pas le bon rôle, rediriger vers la page d'accueil
+        navigate("/");
+        return;
+      }
+    }
+  }, [isAuthenticated, user, isLoading, requiredRoleId, navigate]);
+
+  // Pendant le chargement, ne rien afficher
+  if (isLoading) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <p>Chargement...</p>
+      </div>
+    );
+  }
+
+  // Si non authentifié ou rôle incorrect, ne rien afficher (la redirection est gérée par useEffect)
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+
+  // Vérifier le rôle si requis
+  if (requiredRoleId !== null && user.role_id !== requiredRoleId) {
+    return null;
+  }
+
+  // Afficher le contenu protégé
+  return children;
+}
+
+export default ProtectedRoute;

@@ -1,5 +1,53 @@
 // Ce fichier contient les fonctions pour interagir avec l'API d'authentification depuis le backend//
 
+// Récupère le token depuis localStorage
+export const getToken = () => {
+  return localStorage.getItem("token");
+};
+
+// Stocke le token dans localStorage
+export const setToken = (token) => {
+  localStorage.setItem("token", token);
+};
+
+// Supprime le token de localStorage
+export const removeToken = () => {
+  localStorage.removeItem("token");
+};
+
+/**
+ * Fonction utilitaire pour faire des requêtes HTTP authentifiées
+ * Encapsule la logique répétitive : récupération du token, ajout des headers,
+ * gestion des erreurs et parsing JSON
+ *
+ * @param {string} url - L'URL de l'API
+ * @param {object} options - Les options de fetch (method, body, headers, etc.)
+ * @returns {Promise<any>} Les données parsées depuis la réponse JSON
+ */
+export const authenticatedFetch = async (url, options = {}) => {
+  const token = getToken();
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Erreur lors de la requête");
+  }
+
+  return response.json();
+};
+
 // Fonction pour enregistrer un nouvel utilisateur //
 export const register = async (userData) => {
   try {
@@ -67,23 +115,12 @@ export const login = async (userData) => {
 // Fonction pour déconnecter un utilisateur //
 export const logout = async () => {
   try {
-    const token = getToken();
-
-    const response = await fetch("http://localhost:3000/api/auth/logout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    // Parser la réponse JSON
-    const data = await response.json();
-
-    // Vérifier si la réponse est OK AVANT de retourner les données
-    if (!response.ok) {
-      throw new Error(data.message || "Erreur lors de la déconnexion");
-    }
+    const data = await authenticatedFetch(
+      "http://localhost:3000/api/auth/logout",
+      {
+        method: "POST",
+      }
+    );
 
     // Supprimer le token du localStorage après déconnexion réussie
     removeToken();
@@ -149,19 +186,4 @@ export const resetPassword = async (token, newPassword) => {
       error.message || "Erreur lors de la réinitialisation du mot de passe"
     );
   }
-};
-
-// Récupère le token depuis localStorage
-export const getToken = () => {
-  return localStorage.getItem("token");
-};
-
-// Stocke le token dans localStorage
-export const setToken = (token) => {
-  localStorage.setItem("token", token);
-};
-
-// Supprime le token de localStorage
-export const removeToken = () => {
-  localStorage.removeItem("token");
 };

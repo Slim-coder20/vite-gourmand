@@ -1,5 +1,7 @@
 const express = require("express");
 const Horaire = require("../../models/Horaire");
+const authenticateToken = require("../../middleware/auth");
+const checkEmployeeRole = require("../../middleware/checkRole");
 
 // Création du router Express
 const router = express.Router();
@@ -37,8 +39,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Route POST pour créer un horaire
-router.post("/", async (req, res) => {
+// Route POST pour créer un horaire (employé uniquement)
+router.post("/", authenticateToken, checkEmployeeRole, async (req, res) => {
   try {
     const { horaire_id, jour, heure_ouverture, heure_fermeture } = req.body;
 
@@ -68,8 +70,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Route PUT pour mettre à jour un horaire
-router.put("/:id", async (req, res) => {
+// Route PUT pour mettre à jour un horaire (employé uniquement)
+router.put("/:id", authenticateToken, checkEmployeeRole, async (req, res) => {
   try {
     const { jour, heure_ouverture, heure_fermeture } = req.body;
 
@@ -106,6 +108,39 @@ router.put("/:id", async (req, res) => {
     console.error("Erreur lors de la mise à jour de l'horaire :", error);
   }
 });
+
+// Route DELETE pour supprimer un horaire (employé uniquement)
+router.delete(
+  "/:id",
+  authenticateToken,
+  checkEmployeeRole,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Vérifier que l'horaire existe
+      const horaire = await Horaire.findById(id);
+      if (!horaire) {
+        return res.status(404).json({ message: "Horaire non trouvé" });
+      }
+
+      // Supprimer l'horaire
+      await Horaire.findByIdAndDelete(id);
+
+      res.status(200).json({
+        message: "Horaire supprimé avec succès",
+      });
+
+      console.log("Horaire supprimé avec succès");
+    } catch (error) {
+      res.status(500).json({
+        message: "Erreur lors de la suppression de l'horaire",
+        error: error.message,
+      });
+      console.error("Erreur lors de la suppression de l'horaire :", error);
+    }
+  }
+);
 
 // Exportation du router pour l'utiliser dans index.js
 module.exports = router;

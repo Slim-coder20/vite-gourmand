@@ -1,6 +1,7 @@
 // Importation des modules nécessaires
 // Express : framework web pour Node.js permettant de créer des serveurs HTTP
 const express = require("express");
+
 // CORS : middleware pour gérer les requêtes cross-origin (permet les requêtes depuis d'autres domaines)
 const cors = require("cors");
 
@@ -59,6 +60,8 @@ const commandesRouter = require("./routes/api/commandes");
 const menusRouter = require("./routes/api/menus");
 const avisRouter = require("./routes/api/avis");
 const dashboardUserRouter = require("./routes/api/dashboardUser");
+const employeRouter = require("./routes/api/employe");
+const platsRouter = require ("./routes/api/plats.js"); 
 
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
@@ -69,7 +72,8 @@ app.use("/api/commandes", commandesRouter);
 app.use("/api/menus", menusRouter);
 app.use("/api/avis", avisRouter);
 app.use("/api/dashboard/user", dashboardUserRouter);
-
+app.use("/api/employe", employeRouter);
+app.use("/api/plats", platsRouter); 
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données
 app.get("/", async (req, res) => {
