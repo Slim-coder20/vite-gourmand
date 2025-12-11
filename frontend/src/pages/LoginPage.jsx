@@ -4,23 +4,29 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import styles from "../styles/auth/Login.module.css";
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
-  // Si déjà connecté, rediriger vers la page d'accueil
+  // Si déjà connecté, rediriger selon le rôle
   // Utiliser useEffect pour éviter d'appeler navigate() pendant le rendu
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
+    if (isAuthenticated && user) {
+      // Si l'utilisateur est un employé (role_id === 3), rediriger vers l'espace employé
+      if (user.role_id === 3) {
+        navigate("/employee/dashboard");
+      } else {
+        // Sinon, rediriger vers la page d'accueil client
+        navigate("/");
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,14 +50,25 @@ function LoginPage() {
 
     try {
       // Appeler la fonction login du contexte
-      await login(email, password);
+      const response = await login(email, password);
 
-      // Si succès, rediriger vers la page d'accueil
-      navigate("/");
+      // Vérifier le rôle de l'utilisateur pour la redirection
+      // Le user est maintenant dans AuthContext après le login
+      // On peut aussi utiliser response.user.role_id
+      const userRole = response?.user?.role_id;
 
       // Réinitialiser le formulaire
       setEmail("");
       setPassword("");
+
+      // Rediriger selon le rôle
+      if (userRole === 3) {
+        // Employé : rediriger vers l'espace employé
+        navigate("/employee/dashboard");
+      } else {
+        // Client : rediriger vers la page d'accueil
+        navigate("/");
+      }
     } catch (error) {
       setError(error.message || "Erreur lors de la connexion");
     } finally {

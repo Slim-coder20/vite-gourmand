@@ -4,6 +4,7 @@ const router = express.Router();
 const pool = require("../../config/database");
 const authenticateToken = require("../../middleware/auth");
 const { sendOrderConfirmationEmail } = require("../../config/email");
+const { sendMaterialReturnEmail } = require("../../config/email"); 
 
 // Route GET pour récupérer toutes les commandes depuis l'espace utilisateur //
 router.get("/", authenticateToken, async (req, res) => {

@@ -1,0 +1,438 @@
+/* CONTAINER */
+.container {
+  max-width: 100%;
+  width: 100%;
+  padding: 25px;
+  box-sizing: border-box;
+  background-color: var(--color-bg-light);
+}
+
+/* TITLE */
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+/* CONTENT */
+.content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 25px;
+  box-sizing: border-box;
+  background-color: var(--color-bg-light);
+}
+
+/* LOADING */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: var(--font-size-lg);
+}
+
+/* ERROR */
+.error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #d32f2f;
+}
+
+/* SUCCESS */
+.success {
+  color: #27ae60;
+  background-color: #e8f5e9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #27ae60;
+}
+
+/* FILTRES */
+.filtersSection {
+  margin-bottom: 2rem;
+  padding: 1.5rem 0;
+}
+
+.filtersSection .sectionTitle {
+  margin-bottom: 1.5rem;
+}
+
+.filtersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterGroup label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap; /* Empêche le retour à la ligne pour le label */
+}
+
+.filterLabel {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.filterInput {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.filterInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.filterSelect {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.resetButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background-color: white;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  align-self: flex-start;
+}
+
+.resetButton:hover {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resetButton:active {
+  transform: translateY(0);
+}
+
+/* SECTION TITLE */
+.sectionTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 1rem 0; /* Réinitialiser margin-top et définir margin-bottom */
+  padding: 0;
+  line-height: 1.4;
+  display: block;
+  width: 100%;
+}
+
+/* COMMANDES SECTION */
+.commandesSection {
+  margin-bottom: 2rem;
+  padding: 1.5rem 0;
+}
+
+.commandesSection .sectionTitle {
+  margin-bottom: 1.5rem;
+}
+
+/* COMMANDES GRID */
+.commandesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* COMMANDE CARD */
+.commandeCard {
+  border: 1px solid #ddd;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.commandeCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* COMMANDE HEADER */
+.commandeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.commandeHeader h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* COMMANDE STATUT BADGE */
+.statutBadge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.statutBadge.statut-en-attente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.statutBadge.statut-accepté {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.statutBadge.statut-en-préparation {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.statutBadge.statut-en-cours-de-livraison {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.statutBadge.statut-livré {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.statutBadge.statut-en-attente-du-retour-de-matériel {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.statutBadge.statut-terminée {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.statutBadge.statut-annulée {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* COMMANDE INFO */
+.commandeInfo {
+  flex: 1;
+}
+
+.commandeInfo p {
+  margin: 0.5rem 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.commandeInfo strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* COMMANDE ACTIONS */
+.commandeActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.statutSelect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statutSelect label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.selectInput {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.selectInput:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.selectInput:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cancelButton {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: var(--font-size-sm);
+}
+
+/* EMPTY MESSAGE */
+.emptyMessage {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  font-size: var(--font-size-lg);
+}
+
+/* MODAL */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modalContent h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.modalContent > p {
+  margin: 0 0 1.5rem 0;
+  color: var(--color-text-secondary);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.textarea {
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.2s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.required {
+  color: #d32f2f;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.modalActions button {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--font-size-sm);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .filtersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .commandesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .commandeCard {
+    padding: 1rem;
+  }
+
+  .modalContent {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .modalActions button {
+    width: 100%;
+  }
+}

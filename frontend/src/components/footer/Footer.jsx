@@ -1,7 +1,35 @@
 import "../../index.css";
 import styles from "./Footer.module.css";
+import { useState, useEffect } from "react";
+import { getPublicHoraires } from "../../services/horairesService.js";
 
 function Footer() {
+  // Gestion des états pour les horaires //
+  const [horaires, setHoraires] = useState([]);
+  const [error, setError] = useState(null);
+
+  // Charger les horaires au montage du composant
+  useEffect(() => {
+    const loadHoraires = async () => {
+      try {
+        setError(null);
+        const data = await getPublicHoraires();
+        console.log("Horaires reçus depuis l'API:", data);
+        setHoraires(Array.isArray(data) ? data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          console.log(`✅ ${data.length} horaire(s) chargé(s) avec succès`);
+        } else {
+          console.warn("⚠️ Aucun horaire trouvé dans la base de données");
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error("❌ Erreur lors du chargement des horaires:", err);
+      }
+    };
+
+    loadHoraires();
+  }, []);
+
   return (
     <footer className={styles.footer}>
       {/* Section top avec horaires et logo au même niveau */}
@@ -9,12 +37,22 @@ function Footer() {
         {/* Les Horaires */}
         <div className={styles.footerHoraires}>
           <h3 className={styles.footerHorairesTitle}>Horaires d'ouverture</h3>
-          <p className={styles.footerHorairesText}>
-            Lundi - Vendredi : 10:00 - 22:00
-          </p>
-          <p className={styles.footerHorairesText}>
-            Samedi - Dimanche : 10:00 - 22:00
-          </p>
+          {error ? (
+            <p className={styles.footerHorairesText}>
+              Lundi - Vendredi : 10:00 - 22:00
+            </p>
+          ) : horaires.length > 0 ? (
+            horaires.map((horaire) => (
+              <p key={horaire._id} className={styles.footerHorairesText}>
+                {horaire.jour} : {horaire.heure_ouverture} -{" "}
+                {horaire.heure_fermeture}
+              </p>
+            ))
+          ) : (
+            <p className={styles.footerHorairesText}>
+              Lundi - Vendredi : 10:00 - 22:00
+            </p>
+          )}
         </div>
         {/* Logo */}
         <div className={styles.footerLogo}>

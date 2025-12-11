@@ -577,9 +577,185 @@ const sendAvisConfirmationEmail = async (user, commande, frontendUrl) => {
   }
 };
 
+// Fonction pour envoyer un email de notofication pour le retour materiel 
+const sendMaterialReturnEmail = async (user, commande) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: user.email,
+    subject: `Retour de matériel requis - Commande ${commande.numero_commande} - Vite Gourmand`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 10px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #d4a574;
+            }
+            .content {
+              background-color: white;
+              padding: 20px;
+              border-radius: 5px;
+              margin-bottom: 20px;
+            }
+            .warning-badge {
+              background-color: #fff3cd;
+              color: #856404;
+              padding: 15px;
+              border-radius: 5px;
+              text-align: center;
+              font-weight: bold;
+              margin-bottom: 20px;
+              border-left: 4px solid #ffc107;
+            }
+            .important-notice {
+              background-color: #f8d7da;
+              color: #721c24;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+              border-left: 4px solid #dc3545;
+            }
+            .order-info {
+              background-color: #f8f9fa;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+            }
+            .order-info h3 {
+              margin-top: 0;
+              color: #d4a574;
+            }
+            .footer {
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+              margin-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">🍽️ Vite Gourmand</div>
+            </div>
+            <div class="content">
+              <div class="warning-badge">
+                ⚠️ Retour de matériel requis
+              </div>
+              
+              <h2>Notification de retour de matériel</h2>
+              <p>Bonjour ${user.prenom} ${user.nom},</p>
+              
+              <p>Votre commande <strong>${
+                commande.numero_commande
+              }</strong> a été livrée avec du matériel prêté.</p>
+              
+              <div class="order-info">
+                <h3>Détails de la commande</h3>
+                <p><strong>Numéro de commande :</strong> ${
+                  commande.numero_commande
+                }</p>
+                <p><strong>Date de prestation :</strong> ${new Date(
+                  commande.date_prestation
+                ).toLocaleDateString("fr-FR")}</p>
+              </div>
+              
+              <div class="important-notice">
+                <h3>⚠️ Important - Délai de retour</h3>
+                <p><strong>Vous devez restituer le matériel prêté dans un délai de 10 jours ouvrables.</strong></p>
+                <p>Si le matériel n'est pas restitué dans ce délai, des frais de <strong>600 euros</strong> seront appliqués conformément à nos conditions générales de vente.</p>
+              </div>
+              
+              <h3>Comment restituer le matériel ?</h3>
+              <p>Pour restituer le matériel, veuillez <strong>contacter notre société</strong> :</p>
+              <ul>
+                <li>Par téléphone : [Numéro de téléphone]</li>
+                <li>Par email : [Adresse email]</li>
+              </ul>
+              <p>Notre équipe vous indiquera la procédure de retour et l'adresse de dépôt.</p>
+              
+              <p>Nous vous remercions de votre compréhension et restons à votre disposition pour toute question.</p>
+              
+              <p>Cordialement,<br>L'équipe Vite Gourmand</p>
+            </div>
+            <div class="footer">
+              <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+              <p>&copy; ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Retour de matériel requis - Commande ${
+        commande.numero_commande
+      } - Vite Gourmand
+      
+      Bonjour ${user.prenom} ${user.nom},
+      
+      Votre commande ${
+        commande.numero_commande
+      } a été livrée avec du matériel prêté.
+      
+      ⚠️ IMPORTANT - Délai de retour
+      Vous devez restituer le matériel prêté dans un délai de 10 jours ouvrables.
+      Si le matériel n'est pas restitué dans ce délai, des frais de 600 euros seront appliqués conformément à nos conditions générales de vente.
+      
+      Comment restituer le matériel ?
+      Pour restituer le matériel, veuillez contacter notre société :
+      - Par téléphone : [Numéro de téléphone]
+      - Par email : [Adresse email]
+      
+      Notre équipe vous indiquera la procédure de retour et l'adresse de dépôt.
+      
+      Nous vous remercions de votre compréhension et restons à votre disposition pour toute question.
+      
+      Cordialement,
+      L'équipe Vite Gourmand
+      
+      © ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(
+      "Email de notification de retour de matériel envoyé :",
+      info.messageId
+    );
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email de notification :", error);
+    throw error;
+  }
+};
+
+
 module.exports = {
   transporter,
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
   sendAvisConfirmationEmail,
+  sendMaterialReturnEmail
 };
