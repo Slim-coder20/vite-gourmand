@@ -577,7 +577,7 @@ const sendAvisConfirmationEmail = async (user, commande, frontendUrl) => {
   }
 };
 
-// Fonction pour envoyer un email de notofication pour le retour materiel 
+// Fonction pour envoyer un email de notofication pour le retour materiel
 const sendMaterialReturnEmail = async (user, commande) => {
   const mailOptions = {
     from: process.env.SMTP_FROM || process.env.SMTP_USER,
@@ -751,11 +751,157 @@ const sendMaterialReturnEmail = async (user, commande) => {
   }
 };
 
+// Fonction pour envoyer un email de notification de création de compte employé
+const sendEmployeeAccountCreatedEmail = async (email) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: email,
+    subject: "Votre compte employé a été créé - Vite Gourmand",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 10px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #d4a574;
+            }
+            .content {
+              background-color: white;
+              padding: 20px;
+              border-radius: 5px;
+              margin-bottom: 20px;
+            }
+            .success-badge {
+              background-color: #d4edda;
+              color: #155724;
+              padding: 10px;
+              border-radius: 5px;
+              text-align: center;
+              font-weight: bold;
+              margin-bottom: 20px;
+            }
+            .info-box {
+              background-color: #fff3cd;
+              border-left: 4px solid #ffc107;
+              padding: 15px;
+              margin: 15px 0;
+              border-radius: 3px;
+            }
+            .footer {
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+              margin-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">🍽️ Vite Gourmand</div>
+            </div>
+            <div class="content">
+              <div class="success-badge">
+                ✅ Votre compte employé a été créé
+              </div>
+              
+              <h2>Bienvenue dans l'équipe Vite Gourmand</h2>
+              <p>Bonjour,</p>
+              <p>Un compte employé a été créé pour vous sur la plateforme Vite Gourmand.</p>
+              
+              <div class="info-box">
+                <h3>📧 Informations de connexion</h3>
+                <p><strong>Email (username) :</strong> ${email}</p>
+                <p><strong>Mot de passe :</strong> Pour des raisons de sécurité, votre mot de passe n'est pas communiqué dans cet email.</p>
+              </div>
+              
+              <div class="info-box">
+                <h3>🔐 Récupération de votre mot de passe</h3>
+                <p><strong>Vous devez vous rapprocher de l'administrateur pour obtenir votre mot de passe.</strong></p>
+                <p>L'administrateur vous communiquera votre mot de passe de manière sécurisée.</p>
+              </div>
+              
+              <p style="margin-top: 20px;">
+                Une fois que vous aurez reçu votre mot de passe, vous pourrez vous connecter à votre espace employé.
+              </p>
+              
+              <p>Nous sommes ravis de vous compter parmi nous !</p>
+              
+              <p>Cordialement,<br>L'équipe Vite Gourmand</p>
+            </div>
+            <div class="footer">
+              <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+              <p>&copy; ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Votre compte employé a été créé - Vite Gourmand
+      
+      Bonjour,
+      
+      Un compte employé a été créé pour vous sur la plateforme Vite Gourmand.
+      
+      Informations de connexion :
+      Email (username) : ${email}
+      Mot de passe : Pour des raisons de sécurité, votre mot de passe n'est pas communiqué dans cet email.
+      
+      Récupération de votre mot de passe :
+      Vous devez vous rapprocher de l'administrateur pour obtenir votre mot de passe.
+      L'administrateur vous communiquera votre mot de passe de manière sécurisée.
+      
+      Une fois que vous aurez reçu votre mot de passe, vous pourrez vous connecter à votre espace employé.
+      
+      Nous sommes ravis de vous compter parmi nous !
+      
+      Cordialement,
+      L'équipe Vite Gourmand
+      
+      © ${new Date().getFullYear()} Vite Gourmand - Tous droits réservés
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email de création de compte employé envoyé :", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error(
+      "Erreur lors de l'envoi de l'email de création de compte employé :",
+      error
+    );
+    throw error;
+  }
+};
 
 module.exports = {
   transporter,
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
   sendAvisConfirmationEmail,
-  sendMaterialReturnEmail
+  sendMaterialReturnEmail,
+  sendEmployeeAccountCreatedEmail,
 };

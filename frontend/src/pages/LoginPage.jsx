@@ -18,8 +18,11 @@ function LoginPage() {
   // Utiliser useEffect pour éviter d'appeler navigate() pendant le rendu
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Si l'utilisateur est un employé (role_id === 3), rediriger vers l'espace employé
-      if (user.role_id === 3) {
+      // Si l'utilisateur est un admin (role_id === 2), rediriger vers l'espace admin
+      if (user.role_id === 2) {
+        navigate("/admin/dashboard");
+      } else if (user.role_id === 3) {
+        // Si l'utilisateur est un employé (role_id === 3), rediriger vers l'espace employé
         navigate("/employee/dashboard");
       } else {
         // Sinon, rediriger vers la page d'accueil client
@@ -65,6 +68,9 @@ function LoginPage() {
       if (userRole === 3) {
         // Employé : rediriger vers l'espace employé
         navigate("/employee/dashboard");
+      } else if (userRole === 2) {
+        // Admin : rediriger vers l'espace admin
+        navigate("/admin/dashboard");
       } else {
         // Client : rediriger vers la page d'accueil
         navigate("/");

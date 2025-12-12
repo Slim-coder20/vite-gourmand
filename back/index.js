@@ -50,6 +50,7 @@ mongoose
 // Importation des modèles Mongoose
 const Horaire = require("./models/Horaire");
 const Contact = require("./models/Contact");
+const StatistiqueCommande = require("./models/StatistiqueCommande");
 
 // Importation des routes API
 const horairesRouter = require("./routes/api/horaires");
@@ -61,7 +62,8 @@ const menusRouter = require("./routes/api/menus");
 const avisRouter = require("./routes/api/avis");
 const dashboardUserRouter = require("./routes/api/dashboardUser");
 const employeRouter = require("./routes/api/employe");
-const platsRouter = require ("./routes/api/plats.js"); 
+const platsRouter = require("./routes/api/plats.js");
+const adminRouter = require("./routes/api/admin");
 
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
@@ -73,7 +75,8 @@ app.use("/api/menus", menusRouter);
 app.use("/api/avis", avisRouter);
 app.use("/api/dashboard/user", dashboardUserRouter);
 app.use("/api/employe", employeRouter);
-app.use("/api/plats", platsRouter); 
+app.use("/api/plats", platsRouter);
+app.use("/api/admin", adminRouter);
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données
 app.get("/", async (req, res) => {

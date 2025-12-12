@@ -4,7 +4,8 @@ const router = express.Router();
 const pool = require("../../config/database");
 const authenticateToken = require("../../middleware/auth");
 const { sendOrderConfirmationEmail } = require("../../config/email");
-const { sendMaterialReturnEmail } = require("../../config/email"); 
+const { sendMaterialReturnEmail } = require("../../config/email");
+const StatistiqueCommande = require("../../models/StatistiqueCommande");
 
 // Route GET pour récupérer toutes les commandes depuis l'espace utilisateur //
 router.get("/", authenticateToken, async (req, res) => {
@@ -249,7 +250,46 @@ router.post("/", authenticateToken, async (req, res) => {
       "INSERT INTO commande_statut_history (commande_id, ancien_statut, nouveau_statut, user_id_modification) VALUES (?, NULL, ?, ?)",
       [result.insertId, "en attente", userId]
     );
+    // 14.6 Synchronisation vers MongoDB pour les statistiques
+    try {
+      const chiffreAffaires = prixMenu + prixLivraison;
+      const datePrestation = new Date(date_prestation);
 
+      // Créer les dates de début et fin de journée pour la recherche
+      const dateDebut = new Date(datePrestation);
+      dateDebut.setHours(0, 0, 0, 0);
+      const dateFin = new Date(datePrestation);
+      dateFin.setHours(23, 59, 59, 999);
+
+      // Chercher si un document existe déjà pour ce menu et cette date
+      const existingStat = await StatistiqueCommande.findOne({
+        menu_id: menu_id,
+        date: {
+          $gte: dateDebut,
+          $lte: dateFin,
+        },
+      });
+
+      if (existingStat) {
+        // Mettre à jour le document existant
+        existingStat.nombre_commandes += 1;
+        existingStat.chiffre_affaires += chiffreAffaires;
+        await existingStat.save();
+      } else {
+        // Créer un nouveau document
+        await StatistiqueCommande.create({
+          menu_id: menu_id,
+          menu_titre: menu.titre,
+          nombre_commandes: 1,
+          chiffre_affaires: chiffreAffaires,
+          date: datePrestation,
+        });
+      }
+    } catch (mongoError) {
+      // Ne pas bloquer la création de commande si MongoDB échoue
+      // Juste logger l'erreur
+      console.error("Erreur lors de la synchronisation MongoDB :", mongoError);
+    }
     // 15. Récupérer la commande créée avec les détails
     const [commandeRows] = await pool.query(
       `SELECT 
