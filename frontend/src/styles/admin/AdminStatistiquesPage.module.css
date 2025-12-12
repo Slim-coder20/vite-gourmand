@@ -1,0 +1,184 @@
+.container {
+  padding: 2rem;
+  min-height: 80vh;
+}
+
+.content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--color-text);
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #d32f2f;
+}
+
+/* Section Filtres */
+.filtersSection {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+}
+
+.filterForm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterGroup label {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.filterInput {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: var(--font-size-base);
+  transition: border-color 0.2s ease;
+}
+
+.filterInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+}
+
+.filterButtons {
+  display: flex;
+  gap: 1rem;
+  grid-column: 1 / -1;
+}
+
+.filterButtons button {
+  flex: 1;
+  max-width: 200px;
+}
+
+/* Sections Graphiques */
+.chartSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chartContainer {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.emptyMessage {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  padding: 2rem;
+  text-align: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+/* Total général */
+.totalContainer {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0f8ff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid var(--color-primary);
+}
+
+.totalLabel {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.totalValue {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .filterForm {
+    grid-template-columns: 1fr;
+  }
+
+  .filterButtons {
+    flex-direction: column;
+  }
+
+  .filterButtons button {
+    max-width: 100%;
+  }
+
+  .chartContainer {
+    overflow-x: auto;
+  }
+
+  .totalContainer {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .filtersSection,
+  .chartSection {
+    padding: 1rem;
+  }
+}
