@@ -6,12 +6,27 @@ import { useAuth } from "../context/AuthContext";
  * Composant pour protéger les routes nécessitant une authentification
  * @param {Object} props
  * @param {React.ReactElement} props.children - Le composant à afficher si autorisé
- * @param {number} props.requiredRoleId - Le role_id requis (optionnel). Si non spécifié, seule l'authentification est requise
+ * @param {number|number[]} props.requiredRoleId - Le role_id requis ou un tableau de role_id (optionnel). Si non spécifié, seule l'authentification est requise
  * @returns {React.ReactElement|null}
  */
 function ProtectedRoute({ children, requiredRoleId = null }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Fonction pour vérifier si le rôle de l'utilisateur est autorisé
+  const isRoleAuthorized = (userRoleId) => {
+    if (requiredRoleId === null) {
+      return true; // Pas de restriction de rôle
+    }
+
+    // Si c'est un tableau de rôles
+    if (Array.isArray(requiredRoleId)) {
+      return requiredRoleId.includes(userRoleId);
+    }
+
+    // Si c'est un seul rôle
+    return userRoleId === requiredRoleId;
+  };
 
   useEffect(() => {
     // Ne pas rediriger pendant le chargement
@@ -26,8 +41,8 @@ function ProtectedRoute({ children, requiredRoleId = null }) {
     }
 
     // Si un rôle spécifique est requis
-    if (requiredRoleId !== null) {
-      if (user.role_id !== requiredRoleId) {
+    if (requiredRoleId !== null && user) {
+      if (!isRoleAuthorized(user.role_id)) {
         // Si ce n'est pas le bon rôle, rediriger vers la page d'accueil
         navigate("/");
         return;
@@ -50,7 +65,7 @@ function ProtectedRoute({ children, requiredRoleId = null }) {
   }
 
   // Vérifier le rôle si requis
-  if (requiredRoleId !== null && user.role_id !== requiredRoleId) {
+  if (requiredRoleId !== null && !isRoleAuthorized(user.role_id)) {
     return null;
   }
 

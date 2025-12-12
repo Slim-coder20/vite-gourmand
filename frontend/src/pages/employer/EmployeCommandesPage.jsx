@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import EmployeeHeader from "../../components/header/EmployeeHeader";
+import AdminHeader from "../../components/header/AdminHeader";
 import Footer from "../../components/footer/Footer";
 import {
   getCommandesEmploye,
@@ -43,7 +44,7 @@ function EmployeCommandesPage() {
       return;
     }
 
-    if (user?.role_id !== 3) {
+    if (user?.role_id !== 3 && user?.role_id !== 2) {
       navigate("/");
       return;
     }
@@ -51,7 +52,7 @@ function EmployeCommandesPage() {
 
   // Charger les commandes quand les filtres changent
   useEffect(() => {
-    if (isAuthenticated && user?.role_id === 3) {
+    if (isAuthenticated && (user?.role_id === 3 || user?.role_id === 2)) {
       loadCommandes();
     }
   }, [isAuthenticated, user, filters]);
@@ -180,13 +181,16 @@ function EmployeCommandesPage() {
     "annulée",
   ];
 
-  if (!isAuthenticated || user?.role_id !== 3) {
+  if (!isAuthenticated || (user?.role_id !== 3 && user?.role_id !== 2)) {
     return null;
   }
 
+  // Choisir le header selon le rôle
+  const Header = user?.role_id === 2 ? AdminHeader : EmployeeHeader;
+
   return (
     <div className="app-container">
-      <EmployeeHeader />
+      <Header />
       <main className={styles.container}>
         <div className={styles.content}>
           <h1 className={styles.title}>Gestion des Commandes</h1>
@@ -226,7 +230,9 @@ function EmployeCommandesPage() {
                   type="text"
                   id="user_id"
                   value={filters.user_id}
-                  onChange={(e) => handleFilterChange("user_id", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("user_id", e.target.value)
+                  }
                   placeholder="Rechercher par ID client"
                   className={styles.filterInput}
                 />
@@ -283,12 +289,17 @@ function EmployeCommandesPage() {
             ) : (
               <div className={styles.commandesGrid}>
                 {commandes.map((commande) => (
-                  <div key={commande.commande_id} className={styles.commandeCard}>
+                  <div
+                    key={commande.commande_id}
+                    className={styles.commandeCard}
+                  >
                     <div className={styles.commandeHeader}>
                       <h3>Commande {commande.numero_commande}</h3>
                       <span
                         className={`${styles.statutBadge} ${
-                          styles[`statut-${commande.statut.replace(/\s+/g, "-")}`]
+                          styles[
+                            `statut-${commande.statut.replace(/\s+/g, "-")}`
+                          ]
                         }`}
                       >
                         {commande.statut}
@@ -374,7 +385,10 @@ function EmployeCommandesPage() {
 
           {/* Modal d'annulation */}
           {showCancelModal && selectedCommande && (
-            <div className={styles.modalOverlay} onClick={handleCloseCancelModal}>
+            <div
+              className={styles.modalOverlay}
+              onClick={handleCloseCancelModal}
+            >
               <div
                 className={styles.modalContent}
                 onClick={(e) => e.stopPropagation()}
@@ -388,8 +402,8 @@ function EmployeCommandesPage() {
                 <div className={styles.modalForm}>
                   <div className={styles.formGroup}>
                     <label htmlFor="motif">
-                      Motif d'annulation <span className={styles.required}>*</span>
-                      :
+                      Motif d'annulation{" "}
+                      <span className={styles.required}>*</span>:
                     </label>
                     <textarea
                       id="motif"

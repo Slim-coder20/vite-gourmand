@@ -17,7 +17,9 @@ import EmployeCommandesPage from "./pages/employer/EmployeCommandesPage";
 import EmployeAvisPage from "./pages/employer/EmployeAvisPage";
 import EmployeMenusPage from "./pages/employer/EmployeMenusPage";
 import EmployePlatsPage from "./pages/employer/EmployePlatsPage";
-import EmployeHorairesPage from "./pages/employer/EmployeHorairesPage"; 
+import EmployeHorairesPage from "./pages/employer/EmployeHorairesPage";
+import AdminHomePage from "./pages/admin/AdminHomePage";
+import AdminStatistiquesPage from "./pages/admin/AdminStatistiquesPage";
 
 function App() {
   return (
@@ -44,30 +46,19 @@ function App() {
           }
         />
 
-        {/* Routes protégées pour les employés (role_id === 3) */}
+        {/* Routes protégées pour les employés (role_id === 3) et admins (role_id === 2) */}
         <Route
           path="/employee/dashboard"
           element={
-            <ProtectedRoute requiredRoleId={3}>
+            <ProtectedRoute requiredRoleId={[2, 3]}>
               <EmployeeHomePage />
             </ProtectedRoute>
           }
         />
-        {/* Note: Vous pouvez ajouter d'autres routes employé ici */}
-        {/* Exemple :
         <Route
           path="/employee/commandes"
           element={
-            <ProtectedRoute requiredRoleId={3}>
-              <EmployeeCommandesPage />
-            </ProtectedRoute>
-          }
-        />
-        */}
-        <Route
-          path="/employee/commandes"
-          element={
-            <ProtectedRoute requiredRoleId={3}>
+            <ProtectedRoute requiredRoleId={[2, 3]}>
               <EmployeCommandesPage />
             </ProtectedRoute>
           }
@@ -75,7 +66,7 @@ function App() {
         <Route
           path="/employee/avis"
           element={
-            <ProtectedRoute requiredRoleId={3}>
+            <ProtectedRoute requiredRoleId={[2, 3]}>
               <EmployeAvisPage />
             </ProtectedRoute>
           }
@@ -83,7 +74,7 @@ function App() {
         <Route
           path="/employee/menus"
           element={
-            <ProtectedRoute requiredRoleId={3}>
+            <ProtectedRoute requiredRoleId={[2, 3]}>
               <EmployeMenusPage />
             </ProtectedRoute>
           }
@@ -91,7 +82,7 @@ function App() {
         <Route
           path="/employee/plats"
           element={
-            <ProtectedRoute requiredRoleId={3}>
+            <ProtectedRoute requiredRoleId={[2, 3]}>
               <EmployePlatsPage />
             </ProtectedRoute>
           }
@@ -99,14 +90,28 @@ function App() {
         <Route
           path="/employee/horaires"
           element={
-            <ProtectedRoute requiredRoleId={3}>
+            <ProtectedRoute requiredRoleId={[2, 3]}>
               <EmployeHorairesPage />
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute requiredRoleId={2}>
+              <AdminHomePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/statistiques"
+          element={
+            <ProtectedRoute requiredRoleId={2}>
+              <AdminStatistiquesPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
-      
     </AuthProvider>
   );
 }

@@ -17,7 +17,8 @@ function LoginPage() {
   // Si déjà connecté, rediriger selon le rôle
   // Utiliser useEffect pour éviter d'appeler navigate() pendant le rendu
   useEffect(() => {
-    if (isAuthenticated && user) {
+    // Attendre que l'authentification et l'utilisateur soient bien définis
+    if (isAuthenticated && user && user.role_id) {
       // Si l'utilisateur est un admin (role_id === 2), rediriger vers l'espace admin
       if (user.role_id === 2) {
         navigate("/admin/dashboard");
@@ -55,22 +56,19 @@ function LoginPage() {
       // Appeler la fonction login du contexte
       const response = await login(email, password);
 
-      // Vérifier le rôle de l'utilisateur pour la redirection
-      // Le user est maintenant dans AuthContext après le login
-      // On peut aussi utiliser response.user.role_id
-      const userRole = response?.user?.role_id;
-
       // Réinitialiser le formulaire
       setEmail("");
       setPassword("");
 
-      // Rediriger selon le rôle
-      if (userRole === 3) {
-        // Employé : rediriger vers l'espace employé
-        navigate("/employee/dashboard");
-      } else if (userRole === 2) {
+      // Rediriger immédiatement selon le rôle de la réponse
+      // pour éviter les problèmes de timing avec le useEffect
+      const userRole = response?.user?.role_id;
+      if (userRole === 2) {
         // Admin : rediriger vers l'espace admin
         navigate("/admin/dashboard");
+      } else if (userRole === 3) {
+        // Employé : rediriger vers l'espace employé
+        navigate("/employee/dashboard");
       } else {
         // Client : rediriger vers la page d'accueil
         navigate("/");

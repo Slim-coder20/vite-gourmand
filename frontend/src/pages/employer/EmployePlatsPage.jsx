@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import EmployeeHeader from "../../components/header/EmployeeHeader";
+import AdminHeader from "../../components/header/AdminHeader";
 import Footer from "../../components/footer/Footer";
 import {
   getPlat,
@@ -37,7 +38,7 @@ function EmployePlatsPage() {
       navigate("/login");
       return;
     }
-    if (user?.role_id !== 3) {
+    if (user?.role_id !== 3 && user?.role_id !== 2) {
       navigate("/");
       return;
     }
@@ -45,7 +46,7 @@ function EmployePlatsPage() {
 
   // Charger les plats au montage //
   useEffect(() => {
-    if (isAuthenticated && user?.role_id === 3) {
+    if (isAuthenticated && (user?.role_id === 3 || user?.role_id === 2)) {
       loadPlats();
     }
   }, [isAuthenticated, user]);
@@ -178,12 +179,15 @@ function EmployePlatsPage() {
       console.error("Erreur:", error);
     }
   };
-  if (!isAuthenticated || user?.role_id !== 3) {
+  if (!isAuthenticated || (user?.role_id !== 3 && user?.role_id !== 2)) {
     return null; // La redirection est gérée par useEffect
   }
+  // Choisir le header selon le rôle
+  const Header = user?.role_id === 2 ? AdminHeader : EmployeeHeader;
+
   return (
     <div className="app-container">
-      <EmployeeHeader />
+      <Header />
       <main className={styles.container}>
         <div className={styles.content}>
           <h1 className={styles.title}>Gestion des Plats</h1>

@@ -1,17 +1,17 @@
 // Les imports nécessaires pour la route admin
-const express = require("express");
-const pool = require("../../config/database");
+const express = require("express"); 
+const pool = require("../../config/database"); 
 const authenticateToken = require("../../middleware/auth");
 const bcrypt = require("bcrypt");
 const { sendEmployeeAccountCreatedEmail } = require("../../config/email");
-const checkAdminRole = require("../../middleware/checkAdminRole");
+const checkAdminRole = require("../../middleware/checkAdminRole"); 
 const StatistiqueCommande = require("../../models/StatistiqueCommande");
 
-// Création du router Express //
-const router = express.Router();
+// Création du router Express // 
+const router = express.Router(); 
 
 //=================================
-// Routes pour l'esapce Adminitrateur
+// Routes pour l'esapce Adminitrateur 
 //=================================
 
 // Route GET pour récupérer les informations du dashboard Admin
@@ -20,27 +20,27 @@ router.get(
   authenticateToken,
   checkAdminRole,
   async (req, res) => {
-    try {
-      const userId = req.user.userId;
+  try {
+    const userId = req.user.userId; 
 
       // 1. Récupération des informations de l'admin connecté
-      const [adminRows] = await pool.query(
-        `SELECT 
+    const [adminRows] = await pool.query(
+      `SELECT 
         u.user_id,
         u.email,
         u.nom,
         u.prenom,
         u.telephone,
-        r.libele as role
+      r.libele as role
       FROM user u
       JOIN role r ON u.role_id = r.role_id
       WHERE u.user_id = ?`,
-        [userId]
-      );
+      [userId]
+    ); 
 
-      if (adminRows.length === 0) {
-        return res.status(404).json({ message: "Utilisateur non trouvé" });
-      }
+    if (adminRows.length === 0) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
       const admin = adminRows[0];
 
       // 2. Récupérer le nombre total d'employés (role_id = 3)
