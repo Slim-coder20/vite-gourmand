@@ -25,7 +25,7 @@ services:
       - 3306:3306
     # Montage de volume pour les scripts d'initialisation
     # Les fichiers SQL dans ./mysql_data seront exécutés au démarrage de la base
-    # ⚠️ IMPORTANT : Ces scripts ne s'exécutent QUE lors de la PREMIÈRE création de la base
+    # IMPORTANT : Ces scripts ne s'exécutent QUE lors de la PREMIÈRE création de la base
     # Si le volume MySQL est supprimé, il faut réexécuter manuellement les scripts
     volumes:
       - ./back/mysql_data:/docker-entrypoint-initdb.d
