@@ -537,45 +537,13 @@ router.put(
         });
       }
 
-      // 4. Vérifier si l'employé essaie de se désactiver lui-même (si c'est l'admin connecté)
-      // Note: L'admin ne peut pas se désactiver car il a role_id = 2, donc cette vérification est optionnelle
+      // 4. Mettre à jour le champ actif à false
+      // Le champ actif existe grâce à la migration migration-add-actif-user.sql
+      await pool.query("UPDATE user SET actif = false WHERE user_id = ?", [
+        employeId,
+      ]);
 
-      // 5. Vérifier si la colonne 'actif' existe, sinon on utilisera une autre méthode
-      // Pour l'instant, on va créer un champ actif si nécessaire
-      // Option 1: Si le champ existe, le mettre à false
-      // Option 2: Si le champ n'existe pas, on peut mettre role_id à NULL ou créer une migration
-
-      // Vérifier si le champ actif existe dans la table
-      const [columns] = await pool.query("SHOW COLUMNS FROM user LIKE 'actif'");
-
-      if (columns.length > 0) {
-        // Le champ existe, on le met à false
-        await pool.query("UPDATE user SET actif = false WHERE user_id = ?", [
-          employeId,
-        ]);
-      } else {
-        // Le champ n'existe pas, on peut soit:
-        // - Créer une migration pour l'ajouter
-        // - Utiliser une autre méthode (ex: mettre role_id à NULL temporairement)
-        // Pour l'instant, on va créer le champ à la volée (non recommandé en production)
-        try {
-          await pool.query(
-            "ALTER TABLE user ADD COLUMN actif BOOLEAN DEFAULT true"
-          );
-          await pool.query("UPDATE user SET actif = false WHERE user_id = ?", [
-            employeId,
-          ]);
-        } catch (alterError) {
-          // Si l'ajout échoue (peut-être que le champ existe déjà), on continue
-          console.error("Erreur lors de l'ajout du champ actif :", alterError);
-          return res.status(500).json({
-            message:
-              "Erreur lors de la désactivation. Veuillez créer une migration pour ajouter le champ 'actif' à la table user.",
-          });
-        }
-      }
-
-      // 6. Récupérer l'employé mis à jour
+      // 5. Récupérer l'employé mis à jour
       const [updatedEmploye] = await pool.query(
         `SELECT 
           u.user_id,
