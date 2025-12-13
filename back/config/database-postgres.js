@@ -21,6 +21,19 @@ if (process.env.DATABASE_URL) {
     process.env.DB_SSL === "true" ||
     process.env.DB_SSL === true;
 
+  // Valider le format de DATABASE_URL
+  if (
+    !process.env.DATABASE_URL.startsWith("postgresql://") &&
+    !process.env.DATABASE_URL.startsWith("postgres://")
+  ) {
+    console.error(
+      "❌ ERREUR: DATABASE_URL doit commencer par 'postgresql://' ou 'postgres://'"
+    );
+    console.error(
+      `Format actuel: ${process.env.DATABASE_URL.substring(0, 20)}...`
+    );
+  }
+
   poolConfig = {
     connectionString: process.env.DATABASE_URL,
     max: 10, // Nombre maximum de connexions dans le pool
@@ -29,9 +42,16 @@ if (process.env.DATABASE_URL) {
     ssl: requiresSSL ? { rejectUnauthorized: false } : undefined,
   };
 
-  console.log(
-    `✅ PostgreSQL configuré avec DATABASE_URL (SSL: ${requiresSSL ? "activé" : "désactivé"})`
+  const dbUrlPreview = process.env.DATABASE_URL.replace(
+    /:\/\/[^:]+:[^@]+@/,
+    "://***:***@"
   );
+  console.log(
+    `✅ PostgreSQL configuré avec DATABASE_URL (SSL: ${
+      requiresSSL ? "activé" : "désactivé"
+    })`
+  );
+  console.log(`Connection string: ${dbUrlPreview}`);
 } else {
   // Configuration manuelle si DATABASE_URL n'est pas définie
   poolConfig = {
@@ -56,19 +76,37 @@ const pool = new Pool(poolConfig);
 // Test de connexion au démarrage pour diagnostiquer les problèmes
 pool
   .query("SELECT NOW() as current_time")
-  .then(() => {
+  .then((result) => {
     console.log("✅ PostgreSQL pool créé et connexion testée avec succès");
+    console.log(`Heure serveur PostgreSQL: ${result.rows[0].current_time}`);
   })
   .catch((err) => {
     console.error("❌ Erreur lors du test de connexion PostgreSQL:", err);
+    console.error(`Code d'erreur: ${err.code}`);
+    console.error(`Message: ${err.message}`);
     console.error("Vérifiez que DATABASE_URL est correctement configurée");
+
     if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
-      console.error("Erreur DNS: Impossible de résoudre le nom d'hôte");
+      console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");
+      console.error("Vérifiez que l'URL de connexion Supabase est correcte");
     } else if (err.code === "ECONNREFUSED") {
-      console.error("Connexion refusée: Vérifiez l'URL et les credentials");
+      console.error("❌ Connexion refusée: Vérifiez l'URL et les credentials");
     } else if (err.code === "ETIMEDOUT") {
-      console.error("Timeout de connexion: Vérifiez votre connexion réseau");
+      console.error("❌ Timeout de connexion: Vérifiez votre connexion réseau");
+    } else if (err.code === "28P01") {
+      console.error(
+        "❌ Erreur d'authentification: Vérifiez le mot de passe dans DATABASE_URL"
+      );
+    } else if (err.code === "3D000") {
+      console.error(
+        "❌ Base de données introuvable: Vérifiez le nom de la base dans DATABASE_URL"
+      );
     }
+
+    // Ne pas throw pour éviter de bloquer le démarrage, mais logger l'erreur
+    console.error(
+      "⚠️ L'application continuera mais les requêtes PostgreSQL échoueront"
+    );
   });
 
 // Gestion des erreurs de connexion

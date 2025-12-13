@@ -6,15 +6,29 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // Déterminer le type de base de données à utiliser
-const DB_TYPE = process.env.DB_TYPE || "mysql"; // Par défaut MySQL pour compatibilité
+const DB_TYPE = (process.env.DB_TYPE || "mysql").toLowerCase().trim(); // Normaliser la valeur
 
 let pool;
 
+// Vérification stricte de DB_TYPE pour PostgreSQL
 if (DB_TYPE === "postgres" || DB_TYPE === "postgresql") {
   // Utiliser PostgreSQL (Supabase)
   console.log("📊 Configuration PostgreSQL (Supabase)");
-  console.log(`DB_TYPE: ${DB_TYPE}`);
-  console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? "✅ définie" : "❌ non définie"}`);
+  console.log(`DB_TYPE: "${DB_TYPE}"`);
+  
+  if (!process.env.DATABASE_URL) {
+    console.error("❌ ERREUR: DATABASE_URL n'est pas définie !");
+    console.error("Veuillez définir DATABASE_URL dans les variables d'environnement Vercel");
+    throw new Error("DATABASE_URL is required for PostgreSQL connection");
+  }
+  
+  // Afficher un aperçu de DATABASE_URL (sans le mot de passe) pour diagnostic
+  const dbUrlPreview = process.env.DATABASE_URL.replace(
+    /:\/\/[^:]+:[^@]+@/,
+    "://***:***@"
+  );
+  console.log(`DATABASE_URL: ✅ définie (${dbUrlPreview})`);
+  
   const postgresPool = require("./database-postgres");
   pool = postgresPool;
 } else {
