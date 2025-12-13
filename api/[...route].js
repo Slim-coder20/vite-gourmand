@@ -119,7 +119,7 @@ module.exports = async (req, res) => {
     // Pour /api/menus, req.url peut être '/menus' ou '/api/menus'
     // On doit normaliser pour avoir toujours '/api/...'
     let originalUrl = req.url || "/";
-    
+
     // Si l'URL commence déjà par /api, on la garde telle quelle
     // Sinon, on l'ajoute (cas où Vercel passe juste le chemin après /api)
     if (!originalUrl.startsWith("/api")) {
