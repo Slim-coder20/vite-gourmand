@@ -57,7 +57,7 @@ export const getPublicMenus = async (filters = {}) => {
 // Fonction pour récupérer un menu par son ID (public sans authentification )
 export const getMenuById = async (id) => {
   try {
-    const response = await fetch(`http://localhost:3000/api/menus/${id}`, {
+    const response = await fetch(`${API_URL}/menus/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -2,10 +2,12 @@ import { getToken } from "./authService.js";
 
 // Ce fichier contient les fonctions popur intéragir avec lAPI des avis deouis le frontend //
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 // Fonction pour récupérer tous les avis publics //
 export const getPublicAvis = async () => {
   try {
-    const response = await fetch("http://localhost:3000/api/avis/public", {
+    const response = await fetch(`${API_URL}/avis/public`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -31,7 +33,7 @@ export const createAvisfromCommande = async (
   try {
     const token = getToken();
     const response = await fetch(
-      `http://localhost:3000/api/avis/commande/${commandeId}`,
+      `${API_URL}/avis/commande/${commandeId}`,
       {
         method: "POST",
         headers: {

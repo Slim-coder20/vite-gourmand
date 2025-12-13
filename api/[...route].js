@@ -1,7 +1,6 @@
 // api/[...route].js - Fonction serverless unique pour toutes les routes API
 const express = require('express');
 const cors = require('cors');
-const { createHandler } = require('./_utils/express-wrapper');
 const { connectMongo } = require('./index');
 
 // Import de toutes les routes
@@ -37,24 +36,36 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Montage de toutes les routes
-app.use('/api/auth', authRouter);
-app.use('/api/admin', adminRouter);
-app.use('/api/avis', avisRouter);
-app.use('/api/commandes', commandesRouter);
-app.use('/api/contact', contactRouter);
-app.use('/api/dashboard/user', dashboardUserRouter);
-app.use('/api/employe', employeRouter);
-app.use('/api/horaires', horairesRouter);
-app.use('/api/menus', menusRouter);
-app.use('/api/plats', platsRouter);
-app.use('/api/roles', rolesRouter);
+// Montage de toutes les routes (sans le préfixe /api car Vercel le gère déjà)
+app.use('/auth', authRouter);
+app.use('/admin', adminRouter);
+app.use('/avis', avisRouter);
+app.use('/commandes', commandesRouter);
+app.use('/contact', contactRouter);
+app.use('/dashboard/user', dashboardUserRouter);
+app.use('/employe', employeRouter);
+app.use('/horaires', horairesRouter);
+app.use('/menus', menusRouter);
+app.use('/plats', platsRouter);
+app.use('/roles', rolesRouter);
 
 // Route de santé
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'API is running' });
 });
 
-// Export du handler Vercel
-module.exports = createHandler(app);
+// Handler Vercel - avec catch-all [...route].js, le chemin est déjà dans req.url
+// Exemple: /api/menus -> req.url = '/menus'
+module.exports = async (req, res) => {
+  // Vercel passe déjà le chemin sans /api dans req.url
+  // On doit préfixer avec /api pour que les routes Express fonctionnent
+  const originalUrl = req.url || '/';
+  
+  if (!originalUrl.startsWith('/api')) {
+    req.url = `/api${originalUrl}`;
+    req.originalUrl = `/api${originalUrl}`;
+  }
+  
+  return app(req, res);
+};
 
