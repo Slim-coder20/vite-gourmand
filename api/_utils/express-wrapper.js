@@ -8,7 +8,16 @@ const express = require('express');
  */
 function createHandler(app) {
   return async (req, res) => {
-    // Vercel passe req et res directement
+    // Vercel Serverless Functions : le chemin est dans req.url
+    // On doit préfixer avec /api pour que les routes Express fonctionnent
+    const originalUrl = req.url;
+    
+    // Si l'URL ne commence pas par /api, on l'ajoute
+    if (!originalUrl.startsWith('/api')) {
+      req.url = `/api${originalUrl}`;
+    }
+    
+    // Appel de l'application Express
     return app(req, res);
   };
 }
