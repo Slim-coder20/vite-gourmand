@@ -31,11 +31,13 @@ CREATE TABLE IF NOT EXISTS "user" (
 CREATE TABLE IF NOT EXISTS avis(
   avis_id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,
+  commande_id INTEGER NULL,
   note VARCHAR(50),
   description TEXT,
   statut VARCHAR(50),
   image TEXT,
-  FOREIGN KEY (user_id) REFERENCES "user"(user_id)
+  FOREIGN KEY (user_id) REFERENCES "user"(user_id),
+  FOREIGN KEY (commande_id) REFERENCES commande(commande_id)
 );
 
 -- Création de la table allergene
@@ -146,8 +148,12 @@ CREATE TABLE IF NOT EXISTS commande_statut_history (
   commande_id INTEGER NOT NULL,
   ancien_statut VARCHAR(50),
   nouveau_statut VARCHAR(50),
-  date_changement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (commande_id) REFERENCES commande(commande_id)
+  date_modification TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  user_id_modification INTEGER NOT NULL,
+  motif_annulation TEXT NULL,
+  mode_contact VARCHAR(50) NULL,
+  FOREIGN KEY (commande_id) REFERENCES commande(commande_id),
+  FOREIGN KEY (user_id_modification) REFERENCES "user"(user_id)
 );
 
 -- Ajout de la colonne actif à la table user si elle n'existe pas

@@ -5,7 +5,8 @@
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
     "generate-api": "node scripts/generate-vercel-api.js",
-    "vercel-build": "npm run build"
+    "vercel-build": "npm run build",
+    "export-mysql": "node scripts/export-mysql-to-postgresql.js"
   },
   "dependencies": {
     "express": "^5.1.0",
