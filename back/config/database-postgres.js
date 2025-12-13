@@ -175,16 +175,12 @@ Object.defineProperty(pool, "insertId", {
 });
 
 // Wrapper pour les événements (compatibilité)
-// Sauvegarder la méthode originale avant de l'écraser pour éviter la récursion infinie
-const originalOn = pool.on.bind(pool);
-
 pool.on = (event, callback) => {
   if (event === "connection") {
     // PostgreSQL n'a pas besoin de SET NAMES, mais on peut logger
     console.log("PostgreSQL connection established");
   } else {
-    // Utiliser la méthode originale pour éviter la récursion infinie
-    originalOn(event, callback);
+    pool.on(event, callback);
   }
 };
 
