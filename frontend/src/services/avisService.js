@@ -32,17 +32,14 @@ export const createAvisfromCommande = async (
 ) => {
   try {
     const token = getToken();
-    const response = await fetch(
-      `${API_URL}/avis/commande/${commandeId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ note, description }),
-      }
-    );
+    const response = await fetch(`${API_URL}/avis/commande/${commandeId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ note, description }),
+    });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(

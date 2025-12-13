@@ -117,12 +117,9 @@ export const login = async (userData) => {
 // Fonction pour déconnecter un utilisateur //
 export const logout = async () => {
   try {
-    const data = await authenticatedFetch(
-      `${API_URL}/auth/logout`,
-      {
-        method: "POST",
-      }
-    );
+    const data = await authenticatedFetch(`${API_URL}/auth/logout`, {
+      method: "POST",
+    });
 
     // Supprimer le token du localStorage après déconnexion réussie
     removeToken();
@@ -138,16 +135,13 @@ export const logout = async () => {
 //Fonction pour demander une rénitialisation du mot-de-passe
 export const forgotPassword = async (email) => {
   try {
-    const response = await fetch(
-      `${API_URL}/auth/forgot-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      }
-    );
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
     const data = await response.json();
     if (!response.ok) {
       throw new Error(
@@ -165,16 +159,13 @@ export const forgotPassword = async (email) => {
 // Fonction pour rénitialiser le mot de passe //
 export const resetPassword = async (token, newPassword) => {
   try {
-    const response = await fetch(
-      `${API_URL}/auth/reset-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token, newPassword }),
-      }
-    );
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, newPassword }),
+    });
     const data = await response.json();
 
     if (!response.ok) {
