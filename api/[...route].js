@@ -68,7 +68,9 @@ app.get("/api/health", (req, res) => {
 
 // Middleware de gestion des routes non trouvées (404)
 app.use((req, res) => {
-  console.error(`❌ Route not found: ${req.method} ${req.originalUrl || req.url}`);
+  console.error(
+    `❌ Route not found: ${req.method} ${req.originalUrl || req.url}`
+  );
   res.status(404).json({
     error: "Route not found",
     path: req.originalUrl || req.url,
@@ -113,17 +115,27 @@ module.exports = async (req, res) => {
       return res.status(200).end();
     }
 
-    const originalUrl = req.url || "/";
-    console.log(`📥 Request: ${req.method} ${originalUrl}`);
-
-    // Ajouter /api si ce n'est pas déjà présent
-    // Exemple: req.url = '/menus' -> on veut '/api/menus'
+    // Avec [...route].js, Vercel passe le chemin dans req.url
+    // Pour /api/menus, req.url peut être '/menus' ou '/api/menus'
+    // On doit normaliser pour avoir toujours '/api/...'
+    let originalUrl = req.url || "/";
+    
+    // Si l'URL commence déjà par /api, on la garde telle quelle
+    // Sinon, on l'ajoute (cas où Vercel passe juste le chemin après /api)
     if (!originalUrl.startsWith("/api")) {
-      req.url = `/api${originalUrl}`;
-      req.originalUrl = `/api${originalUrl}`;
-    } else {
-      req.originalUrl = originalUrl;
+      // Si ça commence par /, on ajoute /api devant
+      // Sinon, on ajoute /api/
+      if (originalUrl.startsWith("/")) {
+        originalUrl = `/api${originalUrl}`;
+      } else {
+        originalUrl = `/api/${originalUrl}`;
+      }
     }
+
+    req.url = originalUrl;
+    req.originalUrl = originalUrl;
+
+    console.log(`📥 Request: ${req.method} ${req.url}`);
 
     // Reconstruire les propriétés Express nécessaires
     const parsedUrl = parse(req.url, true);
