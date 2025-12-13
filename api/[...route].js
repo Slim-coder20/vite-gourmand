@@ -18,8 +18,20 @@ const rolesRouter = require("../back/routes/api/roles");
 
 const app = express();
 
+// Configuration CORS pour accepter toutes les origines Vercel
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Autoriser toutes les origines (y compris les preview URLs de Vercel)
+    // En production, vous pouvez restreindre aux domaines spécifiques
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+};
+
 // Middleware globaux
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Middleware de connexion MongoDB
