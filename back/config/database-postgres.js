@@ -9,24 +9,37 @@ dotenv.config();
 
 // Configuration du pool de connexions PostgreSQL
 // Supporte Supabase et autres services PostgreSQL cloud
-const poolConfig = {
-  host: process.env.DB_HOST || "localhost",
-  database: process.env.DB_NAME || "vite_gourmand",
-  user: process.env.DB_USER || "postgres",
-  password: process.env.DB_PASSWORD || "postgres",
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
-  ssl:
-    process.env.DB_SSL === "true" || process.env.DB_SSL === true
-      ? { rejectUnauthorized: false }
-      : false,
-  max: 10, // Nombre maximum de connexions dans le pool
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-};
+let poolConfig;
 
 // Pour Supabase, utilisez la connection string directement
 if (process.env.DATABASE_URL) {
-  poolConfig.connectionString = process.env.DATABASE_URL;
+  // Si DATABASE_URL est définie, utiliser uniquement connectionString
+  // Les autres propriétés seront ignorées
+  poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+    max: 10, // Nombre maximum de connexions dans le pool
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000, // Augmenté pour les connexions cloud
+    ssl: process.env.DB_SSL === "true" || process.env.DB_SSL === true
+      ? { rejectUnauthorized: false }
+      : undefined,
+  };
+} else {
+  // Configuration manuelle si DATABASE_URL n'est pas définie
+  poolConfig = {
+    host: process.env.DB_HOST || "localhost",
+    database: process.env.DB_NAME || "vite_gourmand",
+    user: process.env.DB_USER || "postgres",
+    password: process.env.DB_PASSWORD || "postgres",
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
+    ssl:
+      process.env.DB_SSL === "true" || process.env.DB_SSL === true
+        ? { rejectUnauthorized: false }
+        : false,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  };
 }
 
 // Création d'un pool de connexions PostgreSQL

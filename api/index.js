@@ -18,10 +18,9 @@ async function connectMongo() {
   }
 
   try {
-    mongoConnection = await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Options dépréciées supprimées (useNewUrlParser, useUnifiedTopology)
+    // Ces options n'ont plus d'effet depuis Mongoose 6+
+    mongoConnection = await mongoose.connect(mongoURI);
     console.log('✅ MongoDB connected');
     return mongoConnection;
   } catch (error) {
