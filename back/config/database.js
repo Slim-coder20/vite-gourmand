@@ -12,7 +12,9 @@ let pool;
 
 if (DB_TYPE === "postgres" || DB_TYPE === "postgresql") {
   // Utiliser PostgreSQL (Supabase)
-  console.log("Configuration PostgreSQL (Supabase)");
+  console.log("📊 Configuration PostgreSQL (Supabase)");
+  console.log(`DB_TYPE: ${DB_TYPE}`);
+  console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? "✅ définie" : "❌ non définie"}`);
   const postgresPool = require("./database-postgres");
   pool = postgresPool;
 } else {

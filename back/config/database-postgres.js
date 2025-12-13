@@ -15,15 +15,23 @@ let poolConfig;
 if (process.env.DATABASE_URL) {
   // Si DATABASE_URL est définie, utiliser uniquement connectionString
   // Les autres propriétés seront ignorées
+  // Supabase nécessite SSL, donc on l'active par défaut si DATABASE_URL contient 'supabase'
+  const requiresSSL =
+    process.env.DATABASE_URL.includes("supabase") ||
+    process.env.DB_SSL === "true" ||
+    process.env.DB_SSL === true;
+
   poolConfig = {
     connectionString: process.env.DATABASE_URL,
     max: 10, // Nombre maximum de connexions dans le pool
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000, // Augmenté pour les connexions cloud
-    ssl: process.env.DB_SSL === "true" || process.env.DB_SSL === true
-      ? { rejectUnauthorized: false }
-      : undefined,
+    ssl: requiresSSL ? { rejectUnauthorized: false } : undefined,
   };
+
+  console.log(
+    `✅ PostgreSQL configuré avec DATABASE_URL (SSL: ${requiresSSL ? "activé" : "désactivé"})`
+  );
 } else {
   // Configuration manuelle si DATABASE_URL n'est pas définie
   poolConfig = {
@@ -45,6 +53,24 @@ if (process.env.DATABASE_URL) {
 // Création d'un pool de connexions PostgreSQL
 const pool = new Pool(poolConfig);
 
+// Test de connexion au démarrage pour diagnostiquer les problèmes
+pool
+  .query("SELECT NOW() as current_time")
+  .then(() => {
+    console.log("✅ PostgreSQL pool créé et connexion testée avec succès");
+  })
+  .catch((err) => {
+    console.error("❌ Erreur lors du test de connexion PostgreSQL:", err);
+    console.error("Vérifiez que DATABASE_URL est correctement configurée");
+    if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
+      console.error("Erreur DNS: Impossible de résoudre le nom d'hôte");
+    } else if (err.code === "ECONNREFUSED") {
+      console.error("Connexion refusée: Vérifiez l'URL et les credentials");
+    } else if (err.code === "ETIMEDOUT") {
+      console.error("Timeout de connexion: Vérifiez votre connexion réseau");
+    }
+  });
+
 // Gestion des erreurs de connexion
 pool.on("error", (err) => {
   console.error("❌ PostgreSQL Pool Error:", err);
@@ -52,8 +78,14 @@ pool.on("error", (err) => {
     console.error(
       "PostgreSQL connection refused. Check your connection settings."
     );
+  } else if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
+    console.error("DNS resolution failed. Check DATABASE_URL hostname.");
   } else {
-    throw err;
+    // Ne pas throw pour éviter de crasher l'application
+    console.error("PostgreSQL pool error details:", {
+      code: err.code,
+      message: err.message,
+    });
   }
 });
 
