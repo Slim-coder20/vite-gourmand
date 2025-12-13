@@ -26,8 +26,8 @@ const corsOptions = {
     callback(null, true);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
 // Middleware globaux
@@ -74,6 +74,26 @@ const { parse } = require("url");
 
 module.exports = async (req, res) => {
   try {
+    // Gérer CORS manuellement AVANT de modifier req.url
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-Requested-With"
+      );
+    }
+
+    // Gérer les requêtes OPTIONS (preflight)
+    if (req.method === "OPTIONS") {
+      return res.status(200).end();
+    }
+
     const originalUrl = req.url || "/";
 
     // Ajouter /api si ce n'est pas déjà présent
