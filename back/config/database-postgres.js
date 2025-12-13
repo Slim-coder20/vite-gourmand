@@ -118,18 +118,33 @@ if (process.env.DATABASE_URL) {
 // Création d'un pool de connexions PostgreSQL
 const pool = new Pool(poolConfig);
 
+// Log de la configuration au démarrage
+console.log("🔧 Configuration PostgreSQL:");
+console.log(`  - Max connections: ${poolConfig.max}`);
+console.log(`  - Connection timeout: ${poolConfig.connectionTimeoutMillis}ms`);
+console.log(`  - SSL: ${poolConfig.ssl ? "activé" : "désactivé"}`);
+if (poolConfig.connectionString) {
+  const urlPreview = poolConfig.connectionString.replace(
+    /:\/\/[^:]+:[^@]+@/,
+    "://***:***@"
+  );
+  console.log(`  - Connection string: ${urlPreview}`);
+}
+
 // Test de connexion au démarrage pour diagnostiquer les problèmes
-pool
-  .query("SELECT NOW() as current_time")
-  .then((result) => {
-    console.log("✅ PostgreSQL pool créé et connexion testée avec succès");
-    console.log(`Heure serveur PostgreSQL: ${result.rows[0].current_time}`);
-  })
-  .catch((err) => {
-    console.error("❌ Erreur lors du test de connexion PostgreSQL:", err);
-    console.error(`Code d'erreur: ${err.code}`);
-    console.error(`Message: ${err.message}`);
-    console.error("Vérifiez que DATABASE_URL est correctement configurée");
+// Note: Dans un environnement serverless, cette connexion peut ne pas être établie immédiatement
+setTimeout(() => {
+  pool
+    .query("SELECT NOW() as current_time")
+    .then((result) => {
+      console.log("✅ PostgreSQL pool créé et connexion testée avec succès");
+      console.log(`Heure serveur PostgreSQL: ${result.rows[0].current_time}`);
+    })
+    .catch((err) => {
+      console.error("❌ Erreur lors du test de connexion PostgreSQL:", err);
+      console.error(`Code d'erreur: ${err.code}`);
+      console.error(`Message: ${err.message}`);
+      console.error("Vérifiez que DATABASE_URL est correctement configurée");
 
     if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
       console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");

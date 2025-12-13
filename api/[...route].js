@@ -66,6 +66,49 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "API is running" });
 });
 
+// Route de test de connexion PostgreSQL
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const pool = require("../back/config/database");
+    console.log("🔍 Test de connexion PostgreSQL...");
+    
+    // Test de connexion simple
+    const [rows] = await pool.query("SELECT NOW() as current_time, version() as pg_version");
+    
+    res.json({
+      status: "ok",
+      message: "Connexion PostgreSQL réussie",
+      data: {
+        current_time: rows[0].current_time,
+        pg_version: rows[0].pg_version?.substring(0, 50) + "...",
+      },
+      env: {
+        DB_TYPE: process.env.DB_TYPE || "non défini",
+        DATABASE_URL: process.env.DATABASE_URL 
+          ? process.env.DATABASE_URL.replace(/:\/\/[^:]+:[^@]+@/, "://***:***@")
+          : "non définie",
+      },
+    });
+  } catch (error) {
+    console.error("❌ Erreur test DB:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Erreur de connexion PostgreSQL",
+      error: {
+        code: error.code,
+        message: error.message,
+        name: error.name,
+      },
+      env: {
+        DB_TYPE: process.env.DB_TYPE || "non défini",
+        DATABASE_URL: process.env.DATABASE_URL 
+          ? process.env.DATABASE_URL.replace(/:\/\/[^:]+:[^@]+@/, "://***:***@")
+          : "non définie",
+      },
+    });
+  }
+});
+
 // Middleware de gestion des routes non trouvées (404)
 app.use((req, res) => {
   console.error(
