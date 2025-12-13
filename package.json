@@ -1,0 +1,26 @@
+{
+  "name": "vite-gourmand",
+  "version": "1.0.0",
+  "description": "Application de commande de repas en ligne - Déploiement Vercel",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "generate-api": "node scripts/generate-vercel-api.js",
+    "vercel-build": "npm run build"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.4",
+    "mysql2": "^3.15.3",
+    "pg": "^8.11.3",
+    "nodemailer": "^6.9.15",
+    "bcrypt": "^6.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.x"
+  }
+}
+
