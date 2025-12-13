@@ -20,6 +20,7 @@ import EmployePlatsPage from "./pages/employer/EmployePlatsPage";
 import EmployeHorairesPage from "./pages/employer/EmployeHorairesPage";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import AdminStatistiquesPage from "./pages/admin/AdminStatistiquesPage";
+import AdminEmployesPage from "./pages/admin/AdminEmployesPage";
 
 function App() {
   return (
@@ -108,6 +109,14 @@ function App() {
           element={
             <ProtectedRoute requiredRoleId={2}>
               <AdminStatistiquesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/employes"
+          element={
+            <ProtectedRoute requiredRoleId={2}>
+              <AdminEmployesPage /> 
             </ProtectedRoute>
           }
         />
