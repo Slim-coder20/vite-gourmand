@@ -16,10 +16,9 @@ if (process.env.DATABASE_URL) {
   // Si DATABASE_URL est définie, utiliser uniquement connectionString
   // Les autres propriétés seront ignorées
   // Supabase nécessite SSL, donc on l'active par défaut si DATABASE_URL contient 'supabase'
+  const isSupabase = process.env.DATABASE_URL.includes("supabase");
   const requiresSSL =
-    process.env.DATABASE_URL.includes("supabase") ||
-    process.env.DB_SSL === "true" ||
-    process.env.DB_SSL === true;
+    isSupabase || process.env.DB_SSL === "true" || process.env.DB_SSL === true;
 
   // Valider le format de DATABASE_URL
   if (
@@ -39,8 +38,14 @@ if (process.env.DATABASE_URL) {
     max: 10, // Nombre maximum de connexions dans le pool
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000, // Augmenté pour les connexions cloud
-    ssl: requiresSSL ? { rejectUnauthorized: false } : undefined,
+    // Pour Supabase, SSL est OBLIGATOIRE - forcer l'activation
+    ssl: isSupabase || requiresSSL ? { rejectUnauthorized: false } : undefined,
   };
+
+  // Log de la configuration SSL pour diagnostic
+  if (isSupabase) {
+    console.log("🔒 SSL activé (obligatoire pour Supabase)");
+  }
 
   const dbUrlPreview = process.env.DATABASE_URL.replace(
     /:\/\/[^:]+:[^@]+@/,

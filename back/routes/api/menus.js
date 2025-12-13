@@ -8,6 +8,7 @@ const checkEmployeeRole = require("../../middleware/checkRole");
 // Route GET pour récupérer tous les menus (publique - pas d'authentification requise)
 router.get("/", async (req, res) => {
   try {
+    console.log("📥 Requête GET /api/menus reçue");
     // 1. Récupérer les paramètres de la requête pour les filtres //
     const { prix_max, prix_min, theme_id, regime_id, min_personnes } =
       req.query;
@@ -90,7 +91,9 @@ router.get("/", async (req, res) => {
     sql += " ORDER BY m.titre ASC";
 
     // 6. Exécuter la requête avec les paramètres //
+    console.log("🔍 Exécution requête SQL pour récupérer les menus");
     const [rows] = await pool.query(sql, params);
+    console.log(`✅ ${rows.length} menus récupérés de la base de données`);
 
     // 7. Formater les résultats : convertir la galerie d'images en tableau //
     const menusFormatted = rows.map((menu) => {
@@ -141,11 +144,26 @@ router.get("/", async (req, res) => {
     console.log("Menus récupérés avec succès");
   } catch (error) {
     // Retourner une erreur si la récupération des menus échoue //
+    console.error("❌ Erreur lors de la récupération des menus :", error);
+    console.error("Code d'erreur:", error.code);
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+    
+    // Messages d'erreur plus détaillés selon le type d'erreur
+    let errorMessage = "Erreur lors de la récupération des menus";
+    if (error.code === "ENOTFOUND" || error.code === "EAI_AGAIN") {
+      errorMessage = "Erreur de connexion à la base de données (DNS)";
+    } else if (error.code === "ECONNREFUSED") {
+      errorMessage = "Connexion refusée par la base de données";
+    } else if (error.code === "ETIMEDOUT") {
+      errorMessage = "Timeout de connexion à la base de données";
+    }
+    
     res.status(500).json({
-      message: "Erreur lors de la récupération des menus",
+      message: errorMessage,
       error: error.message,
+      code: error.code,
     });
-    console.error("Erreur lors de la récupération des menus :", error);
   }
 });
 
