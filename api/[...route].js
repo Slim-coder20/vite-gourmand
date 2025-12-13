@@ -56,18 +56,29 @@ app.get("/api/health", (req, res) => {
 
 // Handler Vercel - avec catch-all [...route].js
 // Quand on accède à /api/menus, Vercel appelle cette fonction
-// Le chemin dans req.url est '/menus' (sans le /api)
+// Le chemin dans req.url est '/menus' (sans le /api car c'est capturé par [...route])
 // On doit ajouter /api devant pour que les routes Express fonctionnent
+const { parse } = require("url");
+
 module.exports = async (req, res) => {
   const originalUrl = req.url || "/";
 
   // Ajouter /api si ce n'est pas déjà présent
+  // Exemple: req.url = '/menus' -> on veut '/api/menus'
   if (!originalUrl.startsWith("/api")) {
     req.url = `/api${originalUrl}`;
     req.originalUrl = `/api${originalUrl}`;
   } else {
     req.originalUrl = originalUrl;
   }
+
+  // Reconstruire les propriétés Express nécessaires
+  const parsedUrl = parse(req.url, true);
+  req.path = parsedUrl.pathname;
+  req.query = parsedUrl.query;
+  req.hostname = req.headers.host || "";
+  req.protocol = req.headers["x-forwarded-proto"] || "https";
+  req.secure = req.protocol === "https";
 
   // Appel de l'application Express
   return app(req, res);
