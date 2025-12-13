@@ -176,7 +176,7 @@ setTimeout(() => {
       "⚠️ L'application continuera mais les requêtes PostgreSQL échoueront"
     );
   });
-
+})
 // Gestion des erreurs de connexion
 pool.on("error", (err) => {
   console.error("❌ PostgreSQL Pool Error:", err);
