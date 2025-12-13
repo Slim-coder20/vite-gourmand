@@ -52,6 +52,46 @@ if (process.env.DATABASE_URL) {
     })`
   );
   console.log(`Connection string: ${dbUrlPreview}`);
+
+  // Détecter et avertir si format Supabase suspect
+  if (requiresSSL) {
+    try {
+      const url = new URL(process.env.DATABASE_URL);
+      const hostname = url.hostname;
+      const port = url.port || "5432";
+
+      // Vérifier si on utilise le port pooler (6543) avec l'hostname direct
+      if (
+        hostname.includes("db.") &&
+        hostname.includes(".supabase.co") &&
+        port === "6543"
+      ) {
+        console.error("❌ ERREUR DE CONFIGURATION DÉTECTÉE:");
+        console.error(
+          "Vous utilisez le port 6543 (Transaction Pooler) avec l'hostname direct (db.*.supabase.co)"
+        );
+        console.error("Ces deux formats ne sont pas compatibles !");
+        console.error("");
+        console.error(
+          "SOLUTION 1 - Connexion directe (recommandée pour Vercel):"
+        );
+        console.error(
+          `  postgresql://postgres:[password]@${hostname}:5432/postgres`
+        );
+        console.error("");
+        console.error("SOLUTION 2 - Transaction Pooler:");
+        console.error("  Allez dans Supabase Dashboard → Settings → Database");
+        console.error(
+          "  Copiez la connection string du 'Transaction Pooler' (port 6543)"
+        );
+        console.error(
+          "  Format: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
+        );
+      }
+    } catch (e) {
+      // Ignorer les erreurs de parsing URL
+    }
+  }
 } else {
   // Configuration manuelle si DATABASE_URL n'est pas définie
   poolConfig = {
@@ -89,6 +129,14 @@ pool
     if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
       console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");
       console.error("Vérifiez que l'URL de connexion Supabase est correcte");
+      console.error("");
+      console.error("Formats Supabase valides:");
+      console.error(
+        "  1. Direct: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
+      );
+      console.error(
+        "  2. Pooler: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
+      );
     } else if (err.code === "ECONNREFUSED") {
       console.error("❌ Connexion refusée: Vérifiez l'URL et les credentials");
     } else if (err.code === "ETIMEDOUT") {
