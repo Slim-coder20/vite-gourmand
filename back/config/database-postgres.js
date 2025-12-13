@@ -146,37 +146,41 @@ setTimeout(() => {
       console.error(`Message: ${err.message}`);
       console.error("Vérifiez que DATABASE_URL est correctement configurée");
 
-    if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
-      console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");
-      console.error("Vérifiez que l'URL de connexion Supabase est correcte");
-      console.error("");
-      console.error("Formats Supabase valides:");
-      console.error(
-        "  1. Direct: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
-      );
-      console.error(
-        "  2. Pooler: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
-      );
-    } else if (err.code === "ECONNREFUSED") {
-      console.error("❌ Connexion refusée: Vérifiez l'URL et les credentials");
-    } else if (err.code === "ETIMEDOUT") {
-      console.error("❌ Timeout de connexion: Vérifiez votre connexion réseau");
-    } else if (err.code === "28P01") {
-      console.error(
-        "❌ Erreur d'authentification: Vérifiez le mot de passe dans DATABASE_URL"
-      );
-    } else if (err.code === "3D000") {
-      console.error(
-        "❌ Base de données introuvable: Vérifiez le nom de la base dans DATABASE_URL"
-      );
-    }
+      if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
+        console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");
+        console.error("Vérifiez que l'URL de connexion Supabase est correcte");
+        console.error("");
+        console.error("Formats Supabase valides:");
+        console.error(
+          "  1. Direct: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
+        );
+        console.error(
+          "  2. Pooler: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
+        );
+      } else if (err.code === "ECONNREFUSED") {
+        console.error(
+          "❌ Connexion refusée: Vérifiez l'URL et les credentials"
+        );
+      } else if (err.code === "ETIMEDOUT") {
+        console.error(
+          "❌ Timeout de connexion: Vérifiez votre connexion réseau"
+        );
+      } else if (err.code === "28P01") {
+        console.error(
+          "❌ Erreur d'authentification: Vérifiez le mot de passe dans DATABASE_URL"
+        );
+      } else if (err.code === "3D000") {
+        console.error(
+          "❌ Base de données introuvable: Vérifiez le nom de la base dans DATABASE_URL"
+        );
+      }
 
-    // Ne pas throw pour éviter de bloquer le démarrage, mais logger l'erreur
-    console.error(
-      "⚠️ L'application continuera mais les requêtes PostgreSQL échoueront"
-    );
-  });
-})
+      // Ne pas throw pour éviter de bloquer le démarrage, mais logger l'erreur
+      console.error(
+        "⚠️ L'application continuera mais les requêtes PostgreSQL échoueront"
+      );
+    });
+});
 // Gestion des erreurs de connexion
 pool.on("error", (err) => {
   console.error("❌ PostgreSQL Pool Error:", err);
