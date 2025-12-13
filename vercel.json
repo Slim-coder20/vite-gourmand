@@ -9,7 +9,7 @@
       }
     },
     {
-      "src": "api/**/*.js",
+      "src": "api/[...route].js",
       "use": "@vercel/node",
       "config": {
         "maxDuration": 30
