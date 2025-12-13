@@ -66,6 +66,25 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "API is running" });
 });
 
+// Middleware de gestion des routes non trouvées (404)
+app.use((req, res) => {
+  console.error(`❌ Route not found: ${req.method} ${req.originalUrl || req.url}`);
+  res.status(404).json({
+    error: "Route not found",
+    path: req.originalUrl || req.url,
+    method: req.method,
+  });
+});
+
+// Middleware de gestion des erreurs globales
+app.use((err, req, res, next) => {
+  console.error("❌ Express error:", err);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal server error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+  });
+});
+
 // Handler Vercel - avec catch-all [...route].js
 // Quand on accède à /api/menus, Vercel appelle cette fonction
 // Le chemin dans req.url est '/menus' (sans le /api car c'est capturé par [...route])
@@ -95,6 +114,7 @@ module.exports = async (req, res) => {
     }
 
     const originalUrl = req.url || "/";
+    console.log(`📥 Request: ${req.method} ${originalUrl}`);
 
     // Ajouter /api si ce n'est pas déjà présent
     // Exemple: req.url = '/menus' -> on veut '/api/menus'
@@ -113,10 +133,15 @@ module.exports = async (req, res) => {
     req.protocol = req.headers["x-forwarded-proto"] || "https";
     req.secure = req.protocol === "https";
 
+    // S'assurer que la réponse est toujours en JSON
+    res.setHeader("Content-Type", "application/json");
+
     // Appel de l'application Express
     return app(req, res);
   } catch (error) {
     console.error("❌ Error in API handler:", error);
+    // S'assurer que même les erreurs retournent du JSON
+    res.setHeader("Content-Type", "application/json");
     return res.status(500).json({
       error: "Internal server error",
       message: error.message,
