@@ -209,46 +209,93 @@ router.post("/", authenticateToken, async (req, res) => {
     // 12. Combiner date_prestation et heure_livraison en une seule date et heure //
     const heureLivraisonComplete = `${date_prestation} ${heure_livraison}:00`;
 
+    // Détecter si on utilise PostgreSQL
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
     // 13. Insertion de la commande dans la base de données //
-    const [result] = await pool.query(
-      `INSERT INTO commande (
-        numero_commande, 
-        date_commande, 
-        date_prestation, 
-        heure_livraison, 
-        prix_menu, 
-        nombre_personne, 
-        prix_livraison, 
-        adresse_prestation,
-        statut, 
-        pret_materiel, 
-        restitution_materiel, 
-        user_id
-      ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, 'en attente', ?, ?, ?)`,
-      [
-        numeroCommande,
-        date_prestation,
-        heureLivraisonComplete,
-        prixMenu,
-        nombre_personne,
-        prixLivraison,
-        adresse_prestation,
-        pret_materiel,
-        restitution_materiel,
-        userId,
-      ]
-    );
+    let result, commandeId;
+    if (isPostgreSQL) {
+      // PostgreSQL : utiliser RETURNING pour récupérer l'ID et CURRENT_DATE au lieu de CURDATE()
+      const [insertResult] = await pool.query(
+        `INSERT INTO commande (
+          numero_commande, 
+          date_commande, 
+          date_prestation, 
+          heure_livraison, 
+          prix_menu, 
+          nombre_personne, 
+          prix_livraison, 
+          adresse_prestation,
+          statut, 
+          pret_materiel, 
+          restitution_materiel, 
+          user_id
+        ) VALUES (?, CURRENT_DATE, ?, ?, ?, ?, ?, ?, 'en attente', ?, ?, ?) RETURNING commande_id`,
+        [
+          numeroCommande,
+          date_prestation,
+          heureLivraisonComplete,
+          prixMenu,
+          nombre_personne,
+          prixLivraison,
+          adresse_prestation,
+          pret_materiel,
+          restitution_materiel,
+          userId,
+        ]
+      );
+      // Le wrapper met l'ID dans pool.insertId OU dans le premier résultat
+      commandeId = pool.insertId || insertResult[0]?.commande_id;
+      result = { insertId: commandeId };
+    } else {
+      // MySQL : comportement normal avec CURDATE()
+      [result] = await pool.query(
+        `INSERT INTO commande (
+          numero_commande, 
+          date_commande, 
+          date_prestation, 
+          heure_livraison, 
+          prix_menu, 
+          nombre_personne, 
+          prix_livraison, 
+          adresse_prestation,
+          statut, 
+          pret_materiel, 
+          restitution_materiel, 
+          user_id
+        ) VALUES (?, CURDATE(), ?, ?, ?, ?, ?, ?, 'en attente', ?, ?, ?)`,
+        [
+          numeroCommande,
+          date_prestation,
+          heureLivraisonComplete,
+          prixMenu,
+          nombre_personne,
+          prixLivraison,
+          adresse_prestation,
+          pret_materiel,
+          restitution_materiel,
+          userId,
+        ]
+      );
+      commandeId = result.insertId;
+    }
+    
+    if (!commandeId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création de la commande : ID non récupéré",
+      });
+    }
 
     // 14. Créer le lien entre la commande et le menu
     await pool.query(
       "INSERT INTO commande_menu (commande_id, menu_id) VALUES (?, ?)",
-      [result.insertId, menu_id]
+      [commandeId, menu_id]
     );
 
     // 14.5. Enregistrer le statut initial dans l'historique
     await pool.query(
       "INSERT INTO commande_statut_history (commande_id, ancien_statut, nouveau_statut, user_id_modification) VALUES (?, NULL, ?, ?)",
-      [result.insertId, "en attente", userId]
+      [commandeId, "en attente", userId]
     );
     // 14.6 Synchronisation vers MongoDB pour les statistiques
     try {
