@@ -68,39 +68,49 @@ function Avis() {
           <div className={styles.noAvis}>Aucun avis disponible</div>
         ) : (
           <div className={styles.avisGrid}>
-            {avis.map((item) => (
-              <div key={item.avis_id} className={styles.avisCard}>
-                {/* Illustration/Image de profil */}
-                <div className={styles.avisIllustration}>
-                  {item.user_image ? (
-                    <img
-                      src={item.user_image}
-                      alt={`Photo de profil de ${item.user_nom} ${item.user_prenom}`}
-                      className={styles.avisImage}
-                      onError={(e) => {
-                        // Éviter la boucle infinie : utiliser un flag pour ne tenter le fallback qu'une seule fois
-                        if (e.target.dataset.fallbackUsed === "true") {
-                          // Si l'image par défaut échoue aussi, cacher l'image et désactiver le gestionnaire
+            {avis.map((item, index) => {
+              // Déterminer quelle image utiliser : user_image > image de test > placeholder
+              let imageSrc = null;
+              
+              if (item.user_image) {
+                // Priorité 1 : Photo de profil de l'utilisateur
+                imageSrc = item.user_image;
+              } else {
+                // Priorité 2 : Image de test depuis /images/avis/person-X.jpg (cyclique)
+                // Utiliser l'index modulo 8 pour avoir person-1.jpg à person-8.jpg
+                const personNumber = (index % 8) + 1;
+                imageSrc = `/images/avis/person-${personNumber}.jpg`;
+              }
+
+              return (
+                <div key={item.avis_id} className={styles.avisCard}>
+                  {/* Illustration/Image de profil */}
+                  <div className={styles.avisIllustration}>
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt={`Photo de profil de ${item.user_nom} ${item.user_prenom}`}
+                        className={styles.avisImage}
+                        onError={(e) => {
+                          // Si l'image échoue, afficher le placeholder
                           e.target.style.display = "none";
-                          e.target.onerror = null; // Désactiver complètement le gestionnaire pour éviter la boucle
-                          return;
-                        }
-                        // Première erreur : marquer qu'on a essayé le fallback
-                        e.target.dataset.fallbackUsed = "true";
-                        console.error(
-                          "Erreur de chargement de l'image:",
-                          item.user_image
-                        );
-                        // Essayer l'image par défaut (si elle existe)
-                        e.target.src = "/images/avis/default-person.jpg";
-                      }}
-                    />
-                  ) : (
-                    <div className={styles.avisImagePlaceholder}>
+                          e.target.onerror = null;
+                          // Afficher le placeholder à la place
+                          const placeholder = e.target.parentElement.querySelector(`.${styles.avisImagePlaceholder}`);
+                          if (placeholder) {
+                            placeholder.style.display = "flex";
+                          }
+                        }}
+                      />
+                    ) : null}
+                    {/* Placeholder affiché si pas d'image ou si l'image a échoué */}
+                    <div 
+                      className={styles.avisImagePlaceholder}
+                      style={{ display: imageSrc ? "none" : "flex" }}
+                    >
                       <span className={styles.quoteIcon}>"</span>
                     </div>
-                  )}
-                </div>
+                  </div>
 
                 {/* Contenu */}
                 <div className={styles.avisContent}>
