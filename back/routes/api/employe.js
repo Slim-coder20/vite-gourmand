@@ -3,6 +3,10 @@ const router = express.Router();
 const pool = require("../../config/database");
 const authenticateToken = require("../../middleware/auth");
 const checkEmployeeRole = require("../../middleware/checkRole");
+const {
+  sendMaterialReturnEmail,
+  sendAvisConfirmationEmail,
+} = require("../../config/email");
 
 // ============================================
 // ROUTES POUR Le Dashboard Employe
@@ -430,9 +434,6 @@ router.put(
       // 6.1. Si le statut est "en attente du retour de matériel", envoyer un email
       if (statut === "en attente du retour de matériel") {
         try {
-          // Importer la fonction d'envoi d'email
-          const { sendMaterialReturnEmail } = require("../../config/email");
-
           // Récupérer les informations du client
           const [userRows] = await pool.query(
             'SELECT nom, prenom, email FROM "user" WHERE user_id = ?',
@@ -456,9 +457,6 @@ router.put(
       // 6.2. Si le statut est "livré" ou "terminée", envoyer un email pour demander un avis
       if (statut === "livré" || statut === "terminée") {
         try {
-          // Importer la fonction d'envoi d'email
-          const { sendAvisConfirmationEmail } = require("../../config/email");
-
           // Récupérer les informations complètes du client et de la commande
           const [userRows] = await pool.query(
             'SELECT nom, prenom, email FROM "user" WHERE user_id = ?',
