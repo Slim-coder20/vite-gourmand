@@ -426,7 +426,8 @@ router.put(
         [id, ancienStatut, statut, req.user.userId]
       );
 
-      // 6. Si le statut est "en attente du retour de matériel", envoyer un email
+      // 6. Envoyer des emails selon le statut
+      // 6.1. Si le statut est "en attente du retour de matériel", envoyer un email
       if (statut === "en attente du retour de matériel") {
         try {
           // Importer la fonction d'envoi d'email
@@ -434,7 +435,7 @@ router.put(
 
           // Récupérer les informations du client
           const [userRows] = await pool.query(
-            "SELECT nom, prenom, email FROM user WHERE user_id = ?",
+            'SELECT nom, prenom, email FROM "user" WHERE user_id = ?',
             [commande.user_id]
           );
 
@@ -447,6 +448,78 @@ router.put(
           // Ne pas faire échouer la mise à jour si l'email échoue
           console.error(
             "Erreur lors de l'envoi de l'email de notification :",
+            emailError
+          );
+        }
+      }
+
+      // 6.2. Si le statut est "livré" ou "terminée", envoyer un email pour demander un avis
+      if (statut === "livré" || statut === "terminée") {
+        try {
+          // Importer la fonction d'envoi d'email
+          const { sendAvisConfirmationEmail } = require("../../config/email");
+
+          // Récupérer les informations complètes du client et de la commande
+          const [userRows] = await pool.query(
+            'SELECT nom, prenom, email FROM "user" WHERE user_id = ?',
+            [commande.user_id]
+          );
+
+          if (userRows.length > 0) {
+            const user = userRows[0];
+
+            // Déterminer l'URL du frontend (production ou développement)
+            let frontendUrl = process.env.FRONTEND_URL;
+            if (!frontendUrl) {
+              // En production Vercel, utiliser l'URL de la requête
+              const protocol =
+                req.headers["x-forwarded-proto"] || req.protocol || "https";
+              const host = req.headers.host || req.headers["x-forwarded-host"];
+
+              // Si c'est une URL de preview Vercel, utiliser l'URL de production
+              if (host && host.includes(".vercel.app")) {
+                const projectMatch = host.match(/^([^-]+)/);
+                if (projectMatch) {
+                  const projectName = projectMatch[1];
+                  frontendUrl = `${protocol}://${projectName}.vercel.app`;
+                } else {
+                  frontendUrl = `${protocol}://${host}`;
+                }
+              } else if (host) {
+                frontendUrl = `${protocol}://${host}`;
+              } else {
+                frontendUrl = "http://localhost:5173";
+              }
+            }
+
+            // Récupérer les informations complètes de la commande pour l'email
+            const [commandeRows] = await pool.query(
+              `SELECT 
+                c.*,
+                m.titre as menu_titre
+              FROM commande c
+              LEFT JOIN commande_menu cm ON c.commande_id = cm.commande_id
+              LEFT JOIN menu m ON cm.menu_id = m.menu_id
+              WHERE c.commande_id = ?`,
+              [id]
+            );
+
+            if (commandeRows.length > 0) {
+              const commandeComplete = commandeRows[0];
+              await sendAvisConfirmationEmail(
+                user,
+                commandeComplete,
+                frontendUrl
+              );
+              console.log(
+                `✅ Email d'invitation à donner un avis envoyé pour la commande ${commandeComplete.numero_commande}`
+              );
+            }
+          }
+        } catch (emailError) {
+          // Ne pas faire échouer la mise à jour si l'email échoue
+          console.error(
+            "❌ Erreur lors de l'envoi de l'email d'invitation à donner un avis :",
             emailError
           );
         }
