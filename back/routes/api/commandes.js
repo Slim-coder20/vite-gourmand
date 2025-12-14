@@ -348,7 +348,7 @@ router.post("/", authenticateToken, async (req, res) => {
       LEFT JOIN commande_menu cm ON c.commande_id = cm.commande_id
       LEFT JOIN menu m ON cm.menu_id = m.menu_id
       WHERE c.commande_id = ?`,
-      [result.insertId]
+      [commandeId]
     );
 
     // 16. Envoyer l'email de confirmation
