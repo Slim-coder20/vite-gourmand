@@ -179,8 +179,36 @@ if (process.env.DATABASE_URL) {
   };
 }
 
-// Création d'un pool de connexions PostgreSQL
-const pool = new Pool(poolConfig);
+// Création lazy du pool pour environnement serverless
+// Dans Vercel, créer le pool au chargement du module peut causer des problèmes DNS
+// On crée le pool seulement quand il est utilisé pour la première fois
+let pool = null;
+
+function getPool() {
+  if (!pool) {
+    console.log("🔧 Création du pool PostgreSQL (lazy initialization)");
+    pool = new Pool(poolConfig);
+    
+    // Gestion des erreurs de connexion
+    pool.on("error", (err) => {
+      console.error("❌ PostgreSQL Pool Error:", err);
+      if (err.code === "ECONNREFUSED") {
+        console.error(
+          "PostgreSQL connection refused. Check your connection settings."
+        );
+      } else if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
+        console.error("DNS resolution failed. Check DATABASE_URL hostname.");
+        console.error(`Hostname: ${poolConfig.connectionString ? new URL(poolConfig.connectionString).hostname : 'N/A'}`);
+      } else {
+        console.error("PostgreSQL pool error details:", {
+          code: err.code,
+          message: err.message,
+        });
+      }
+    });
+  }
+  return pool;
+}
 
 // Log de la configuration au démarrage
 console.log("🔧 Configuration PostgreSQL:");
@@ -200,9 +228,10 @@ if (poolConfig.connectionString) {
 // Utiliser un délai plus court pour serverless (Vercel)
 const testDelay = process.env.VERCEL ? 100 : 1000; // 100ms pour Vercel, 1s pour local
 
-setTimeout(() => {
-  pool
-    .query("SELECT NOW() as current_time")
+// Test de connexion désactivé - le pool sera créé à la demande
+// setTimeout(() => {
+//   getPool()
+//     .query("SELECT NOW() as current_time")
     .then((result) => {
       console.log("✅ PostgreSQL pool créé et connexion testée avec succès");
       console.log(`Heure serveur PostgreSQL: ${result.rows[0].current_time}`);
@@ -363,11 +392,13 @@ function convertMySQLToPostgreSQL(sql) {
 
 // Wrapper pour normaliser les résultats (compatible avec mysql2)
 // MySQL retourne [rows, fields], on doit faire pareil pour PostgreSQL
-const originalQuery = pool.query.bind(pool);
-
-pool.query = async (text, params) => {
+// Utiliser getPool() pour obtenir le pool à la demande (lazy initialization)
+const poolQuery = async (text, params) => {
   let convertedText = text;
   try {
+    // Obtenir le pool (créé à la demande)
+    const currentPool = getPool();
+    
     // 1. Convertir les fonctions MySQL en PostgreSQL
     convertedText = convertMySQLToPostgreSQL(text);
 
@@ -380,7 +411,7 @@ pool.query = async (text, params) => {
       convertedText = convertedText.replace(/\?/g, () => `$${paramIndex++}`);
     }
 
-    const result = await originalQuery(convertedText, convertedParams);
+    const result = await currentPool.query(convertedText, convertedParams);
 
     // Gérer insertId pour les INSERT avec RETURNING
     // Si c'est un INSERT et qu'il y a un RETURNING, extraire l'ID
@@ -395,7 +426,7 @@ pool.query = async (text, params) => {
         (key) => key.includes("_id") || key === "id"
       );
       if (idKey && firstRow[idKey]) {
-        pool.insertId = firstRow[idKey];
+        poolQuery.insertId = firstRow[idKey];
       }
     }
 
@@ -413,28 +444,16 @@ pool.query = async (text, params) => {
 
 // Ajouter une propriété insertId pour compatibilité avec MySQL
 // Note: Les requêtes INSERT doivent utiliser RETURNING pour que cela fonctionne
-Object.defineProperty(pool, "insertId", {
+Object.defineProperty(poolQuery, "insertId", {
   get() {
     // Cette propriété sera définie après un INSERT avec RETURNING
-    return this._lastInsertId || null;
+    return poolQuery._lastInsertId || null;
   },
   set(value) {
-    this._lastInsertId = value;
+    poolQuery._lastInsertId = value;
   },
 });
 
-// Wrapper pour les événements (compatibilité)
-// Sauvegarder la méthode originale avant de l'écraser pour éviter la récursion infinie
-const originalOn = pool.on.bind(pool);
-
-pool.on = (event, callback) => {
-  if (event === "connection") {
-    // PostgreSQL n'a pas besoin de SET NAMES, mais on peut logger
-    console.log("PostgreSQL connection established");
-  } else {
-    // Utiliser la méthode originale pour éviter la récursion infinie
-    originalOn(event, callback);
-  }
-};
-
-module.exports = pool;
+// Exporter poolQuery comme interface principale
+// Compatible avec l'utilisation existante : const pool = require("../../config/database");
+module.exports = poolQuery;
