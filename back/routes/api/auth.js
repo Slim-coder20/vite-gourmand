@@ -86,24 +86,52 @@ router.post("/register", async (req, res) => {
       });
     }
     const roleId = roleRows[0].role_id;
+    
+    // Détecter si on utilise PostgreSQL
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
     // insertion de l'utilisateur dans la base de données //
-    const [result] = await pool.query(
-      "INSERT INTO user (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        nom,
-        prenom,
-        email,
-        hashedPassword,
-        adresse_postals,
-        telephone,
-        ville,
-        pays,
-        roleId,
-      ]
-    );
+    let result, userId;
+    if (isPostgreSQL) {
+      // PostgreSQL : utiliser RETURNING pour récupérer l'ID
+      const [insertResult] = await pool.query(
+        'INSERT INTO "user" (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING user_id',
+        [
+          nom,
+          prenom,
+          email,
+          hashedPassword,
+          adresse_postals,
+          telephone,
+          ville,
+          pays,
+          roleId,
+        ]
+      );
+      userId = insertResult[0]?.user_id;
+      result = { insertId: userId };
+    } else {
+      // MySQL : comportement normal
+      [result] = await pool.query(
+        "INSERT INTO user (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          nom,
+          prenom,
+          email,
+          hashedPassword,
+          adresse_postals,
+          telephone,
+          ville,
+          pays,
+          roleId,
+        ]
+      );
+      userId = result.insertId;
+    }
+    
     // récupération de l'utilisateur créé //
-    const [rows] = await pool.query("SELECT * FROM user WHERE user_id = ?", [
-      result.insertId,
+    const [rows] = await pool.query("SELECT * FROM \"user\" WHERE user_id = ?", [
+      userId,
     ]);
     if (rows.length === 0) {
       return res
