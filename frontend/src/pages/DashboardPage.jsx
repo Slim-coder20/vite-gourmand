@@ -2,7 +2,7 @@ import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import styles from "../styles/dashboard/dashboardPage.module.css";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   getUserDashboard,
@@ -12,7 +12,9 @@ import {
   updateCommand,
   cancelCommand,
 } from "../services/dashboardUserService";
+import { createAvisfromCommande } from "../services/avisService";
 import EditCommandForm from "../components/dashboard/EditCommandForm";
+import CreateAvisForm from "../components/dashboard/CreateAvisForm";
 
 function DashboardPage() {
   const [userDashboard, setUserDashboard] = useState(null);
@@ -20,12 +22,15 @@ function DashboardPage() {
   const [commandHistory, setCommandHistory] = useState([]);
   const [selectedCommandId, setSelectedCommandId] = useState(null);
   const [editingCommandId, setEditingCommandId] = useState(null);
+  const [creatingAvisForCommandId, setCreatingAvisForCommandId] =
+    useState(null);
   const [commandToCancelId, setCommandToCancelId] = useState("");
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // useEffect 1 : Vérification authentification //
   useEffect(() => {
@@ -72,6 +77,26 @@ function DashboardPage() {
     };
     loadUserCommands();
   }, [isAuthenticated]);
+
+  // useEffect 5 : Vérifier si un paramètre 'commande' est présent dans l'URL
+  useEffect(() => {
+    const commandeParam = searchParams.get("commande");
+    if (commandeParam && isAuthenticated) {
+      const commandeId = parseInt(commandeParam);
+      if (!isNaN(commandeId)) {
+        // Vérifier si la commande existe et est terminée
+        const commande = userCommands.find(
+          (cmd) => cmd.commande_id === commandeId
+        );
+        if (commande && commande.statut === "terminée") {
+          // Ouvrir automatiquement le formulaire d'avis
+          setCreatingAvisForCommandId(commandeId);
+          // Nettoyer l'URL
+          setSearchParams({});
+        }
+      }
+    }
+  }, [searchParams, isAuthenticated, userCommands, setSearchParams]);
 
   // useEffect 4 : Pour charger l'historique des statuts d'une commande //
   useEffect(() => {
@@ -187,6 +212,32 @@ function DashboardPage() {
     }
   };
 
+  // Fonction pour créer un avis sur une commande terminée
+  const handleCreateAvis = async (commandeId, avisData) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+      await createAvisfromCommande(commandeId, avisData);
+      setSuccessMessage(
+        "Votre avis a été envoyé avec succès ! Il sera validé par notre équipe."
+      );
+      setCreatingAvisForCommandId(null);
+      // Recharger les commandes pour mettre à jour l'affichage
+      const commandsData = await getUserCommands();
+      setUserCommands(Array.isArray(commandsData) ? commandsData : []);
+      // Faire disparaître le message après 5 secondes
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+    } catch (error) {
+      setError(error.message);
+      setSuccessMessage(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Si non authentifié, ne rien afficher (redirection en cours)
   if (!isAuthenticated) {
     return null;
@@ -242,6 +293,19 @@ function DashboardPage() {
                       onClick={() => setSelectedCommandId(command.commande_id)}
                     >
                       Voir le suivi
+                    </button>
+                  )}
+                  {command.statut === "terminée" && (
+                    <button
+                      onClick={() =>
+                        setCreatingAvisForCommandId(command.commande_id)
+                      }
+                      style={{
+                        marginLeft: "0.5rem",
+                        backgroundColor: "#d4a574",
+                      }}
+                    >
+                      Donner un avis
                     </button>
                   )}
                 </li>
@@ -401,6 +465,22 @@ function DashboardPage() {
             error={error}
           />
         )}
+        {creatingAvisForCommandId &&
+          (() => {
+            const commandeToReview = userCommands.find(
+              (cmd) => cmd.commande_id === creatingAvisForCommandId
+            );
+            return commandeToReview ? (
+              <CreateAvisForm
+                commandeId={creatingAvisForCommandId}
+                commandeData={commandeToReview}
+                onSubmit={handleCreateAvis}
+                onCancel={() => setCreatingAvisForCommandId(null)}
+                isLoading={isLoading}
+                error={error}
+              />
+            ) : null;
+          })()}
       </main>
       <Footer />
     </div>
