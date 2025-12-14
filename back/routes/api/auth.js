@@ -86,16 +86,19 @@ router.post("/register", async (req, res) => {
       });
     }
     const roleId = roleRows[0].role_id;
-    
+
     // Détecter si on utilise PostgreSQL
-    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
-    
+    const isPostgreSQL =
+      process.env.DB_TYPE === "postgres" ||
+      process.env.DB_TYPE === "postgresql";
+
     // insertion de l'utilisateur dans la base de données //
     let result, userId;
     if (isPostgreSQL) {
       // PostgreSQL : utiliser RETURNING pour récupérer l'ID
+      // Le wrapper convertit automatiquement ? en $1, $2, etc.
       const [insertResult] = await pool.query(
-        'INSERT INTO "user" (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING user_id',
+        'INSERT INTO "user" (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING user_id',
         [
           nom,
           prenom,
@@ -108,7 +111,8 @@ router.post("/register", async (req, res) => {
           roleId,
         ]
       );
-      userId = insertResult[0]?.user_id;
+      // Le wrapper met l'ID dans pool.insertId OU dans le premier résultat
+      userId = pool.insertId || insertResult[0]?.user_id;
       result = { insertId: userId };
     } else {
       // MySQL : comportement normal
@@ -128,9 +132,16 @@ router.post("/register", async (req, res) => {
       );
       userId = result.insertId;
     }
-    
+
+    if (!userId) {
+      return res.status(500).json({
+        message:
+          "Erreur lors de la création de l'utilisateur : ID non récupéré",
+      });
+    }
+
     // récupération de l'utilisateur créé //
-    const [rows] = await pool.query("SELECT * FROM \"user\" WHERE user_id = ?", [
+    const [rows] = await pool.query('SELECT * FROM "user" WHERE user_id = ?', [
       userId,
     ]);
     if (rows.length === 0) {
