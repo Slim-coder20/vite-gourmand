@@ -36,7 +36,7 @@ if (process.env.DATABASE_URL) {
   // Pour Supabase, essayer deux approches selon l'environnement
   // Approche 1 : Utiliser connectionString avec SSL explicite
   // Approche 2 : Si ça ne marche pas, parser l'URL et utiliser les paramètres individuels
-  
+
   if (isSupabase) {
     // Pour Supabase, forcer SSL de manière explicite
     poolConfig = {
@@ -46,7 +46,7 @@ if (process.env.DATABASE_URL) {
       connectionTimeoutMillis: 20000, // Timeout plus long pour cloud
       ssl: {
         rejectUnauthorized: false,
-        require: true
+        require: true,
       },
       // Options supplémentaires pour Supabase
       keepAlive: true,
@@ -58,10 +58,12 @@ if (process.env.DATABASE_URL) {
       max: 10,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 15000,
-      ssl: requiresSSL ? { 
-        rejectUnauthorized: false,
-        require: true 
-      } : undefined,
+      ssl: requiresSSL
+        ? {
+            rejectUnauthorized: false,
+            require: true,
+          }
+        : undefined,
     };
   }
 
@@ -195,6 +197,9 @@ if (poolConfig.connectionString) {
 
 // Test de connexion au démarrage pour diagnostiquer les problèmes
 // Note: Dans un environnement serverless, cette connexion peut ne pas être établie immédiatement
+// Utiliser un délai plus court pour serverless (Vercel)
+const testDelay = process.env.VERCEL ? 100 : 1000; // 100ms pour Vercel, 1s pour local
+
 setTimeout(() => {
   pool
     .query("SELECT NOW() as current_time")
