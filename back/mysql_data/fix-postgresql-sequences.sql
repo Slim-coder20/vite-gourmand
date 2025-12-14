@@ -28,6 +28,12 @@ SELECT setval('regime_regime_id_seq', COALESCE((SELECT MAX(regime_id) FROM regim
 -- Synchroniser la séquence allergene_allergene_id_seq
 SELECT setval('allergene_allergene_id_seq', COALESCE((SELECT MAX(allergene_id) FROM allergene), 1), true);
 
+-- Synchroniser la séquence commande_statut_history_history_id_seq
+SELECT setval('commande_statut_history_history_id_seq', COALESCE((SELECT MAX(history_id) FROM commande_statut_history), 1), true);
+
+-- Synchroniser la séquence password_reset_tokens_token_id_seq (si elle existe)
+SELECT setval('password_reset_tokens_token_id_seq', COALESCE((SELECT MAX(token_id) FROM password_reset_tokens), 1), true);
+
 -- Vérifier les séquences
 SELECT 
   'user_user_id_seq' as sequence_name,
