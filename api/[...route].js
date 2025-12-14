@@ -26,12 +26,10 @@ try {
   // Créer un router vide pour éviter les crashes
   const express = require("express");
   userRouter = express.Router();
-  userRouter.all("*", (req, res) => {
-    res
-      .status(503)
-      .json({
-        message: "Service d'upload d'images temporairement indisponible",
-      });
+  userRouter.all("/*", (req, res) => {
+    res.status(503).json({
+      message: "Service d'upload d'images temporairement indisponible",
+    });
   });
 }
 
