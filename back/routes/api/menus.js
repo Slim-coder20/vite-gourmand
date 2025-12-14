@@ -9,6 +9,27 @@ const checkEmployeeRole = require("../../middleware/checkRole");
 router.get("/", async (req, res) => {
   try {
     console.log("📥 Requête GET /api/menus reçue");
+    
+    // Log de diagnostic pour la connexion PostgreSQL
+    console.log("🔍 Diagnostic connexion PostgreSQL:");
+    console.log(`  - DB_TYPE: ${process.env.DB_TYPE || "non défini"}`);
+    if (process.env.DATABASE_URL) {
+      try {
+        const url = new URL(process.env.DATABASE_URL);
+        console.log(`  - Hostname: ${url.hostname}`);
+        console.log(`  - Port: ${url.port || "5432 (défaut)"}`);
+        if (url.hostname.endsWith(".sup")) {
+          console.error("  ❌ PROBLÈME DÉTECTÉ: Hostname tronqué !");
+          console.error(`     Hostname actuel: ${url.hostname}`);
+          console.error(`     Hostname attendu: ${url.hostname}abase.co`);
+        }
+      } catch (e) {
+        console.error(`  ❌ Erreur parsing DATABASE_URL: ${e.message}`);
+      }
+    } else {
+      console.error("  ❌ DATABASE_URL n'est pas définie !");
+    }
+    
     // 1. Récupérer les paramètres de la requête pour les filtres //
     const { prix_max, prix_min, theme_id, regime_id, min_personnes } =
       req.query;
