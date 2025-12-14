@@ -71,7 +71,7 @@ function Avis() {
             {avis.map((item, index) => {
               // Déterminer quelle image utiliser : user_image > image de test > placeholder
               let imageSrc = null;
-              
+
               if (item.user_image) {
                 // Priorité 1 : Photo de profil de l'utilisateur
                 imageSrc = item.user_image;
@@ -96,7 +96,10 @@ function Avis() {
                           e.target.style.display = "none";
                           e.target.onerror = null;
                           // Afficher le placeholder à la place
-                          const placeholder = e.target.parentElement.querySelector(`.${styles.avisImagePlaceholder}`);
+                          const placeholder =
+                            e.target.parentElement.querySelector(
+                              `.${styles.avisImagePlaceholder}`
+                            );
                           if (placeholder) {
                             placeholder.style.display = "flex";
                           }
@@ -104,7 +107,7 @@ function Avis() {
                       />
                     ) : null}
                     {/* Placeholder affiché si pas d'image ou si l'image a échoué */}
-                    <div 
+                    <div
                       className={styles.avisImagePlaceholder}
                       style={{ display: imageSrc ? "none" : "flex" }}
                     >
@@ -112,21 +115,22 @@ function Avis() {
                     </div>
                   </div>
 
-                {/* Contenu */}
-                <div className={styles.avisContent}>
-                  <div className={styles.avisHeader}>
-                    <h2 className={styles.avisTitle}>
-                      {item.user_nom} {item.user_prenom}
-                    </h2>
-                    <div className={styles.avisStars}>
-                      {renderStars(item.note)}
+                  {/* Contenu */}
+                  <div className={styles.avisContent}>
+                    <div className={styles.avisHeader}>
+                      <h2 className={styles.avisTitle}>
+                        {item.user_nom} {item.user_prenom}
+                      </h2>
+                      <div className={styles.avisStars}>
+                        {renderStars(item.note)}
+                      </div>
                     </div>
+                    <div className={styles.avisSeparator}></div>
+                    <p className={styles.avisDescription}>{item.description}</p>
                   </div>
-                  <div className={styles.avisSeparator}></div>
-                  <p className={styles.avisDescription}>{item.description}</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
