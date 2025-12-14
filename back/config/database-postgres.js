@@ -57,6 +57,39 @@ if (process.env.DATABASE_URL) {
     })`
   );
   console.log(`Connection string: ${dbUrlPreview}`);
+  
+  // Extraire et logger le hostname pour diagnostic DNS
+  try {
+    // Vérifier que DATABASE_URL est bien une string
+    if (typeof process.env.DATABASE_URL !== "string") {
+      console.error("❌ ERREUR: DATABASE_URL n'est pas une string");
+      console.error(`   Type reçu: ${typeof process.env.DATABASE_URL}`);
+    } else {
+      const url = new URL(process.env.DATABASE_URL);
+      console.log(`🔍 Hostname extrait: ${url.hostname}`);
+      console.log(`🔍 Port extrait: ${url.port || "5432 (défaut)"}`);
+      console.log(`🔍 Database extraite: ${url.pathname}`);
+      
+      // Vérifier que le hostname est complet
+      if (!url.hostname.includes(".")) {
+        console.error("❌ ERREUR: Hostname invalide (pas de point)");
+      }
+      if (url.hostname.endsWith(".sup")) {
+        console.error("❌ ERREUR: Hostname semble tronqué (se termine par .sup au lieu de .supabase.co)");
+        console.error(`   Hostname complet attendu: ${url.hostname}abase.co`);
+      }
+    }
+  } catch (urlError) {
+    console.error("❌ ERREUR: Impossible de parser DATABASE_URL:", urlError.message);
+    if (process.env.DATABASE_URL) {
+      const urlPreview = typeof process.env.DATABASE_URL === "string" 
+        ? process.env.DATABASE_URL.substring(0, 50) 
+        : String(process.env.DATABASE_URL).substring(0, 50);
+      console.error(`   URL reçue: ${urlPreview}...`);
+    } else {
+      console.error("   DATABASE_URL est undefined ou null");
+    }
+  }
 
   // Détecter et avertir si format Supabase suspect
   if (requiresSSL) {
@@ -144,11 +177,24 @@ setTimeout(() => {
       console.error("❌ Erreur lors du test de connexion PostgreSQL:", err);
       console.error(`Code d'erreur: ${err.code}`);
       console.error(`Message: ${err.message}`);
+      
+      // Extraire le hostname de l'URL pour diagnostic
+      let hostnameInfo = "N/A";
+      try {
+        const url = new URL(process.env.DATABASE_URL);
+        hostnameInfo = url.hostname;
+        console.error(`🔍 Hostname utilisé: ${hostnameInfo}`);
+      } catch (e) {
+        console.error(`🔍 Impossible d'extraire le hostname de DATABASE_URL`);
+      }
+      
       console.error("Vérifiez que DATABASE_URL est correctement configurée");
 
       if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
         console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");
-        console.error("Vérifiez que l'URL de connexion Supabase est correcte");
+        console.error(`   Hostname qui a échoué: ${hostnameInfo}`);
+        console.error("   Vérifiez que l'URL de connexion Supabase est correcte");
+        console.error("   Le hostname doit être COMPLET (ex: db.wfbwmyeyudxqqidgsmcc.supabase.co)");
         console.error("");
         console.error("Formats Supabase valides:");
         console.error(
@@ -157,14 +203,20 @@ setTimeout(() => {
         console.error(
           "  2. Pooler: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
         );
+        console.error("");
+        console.error("⚠️ Vérifiez dans Vercel → Settings → Environment Variables:");
+        console.error("   - DATABASE_URL ne doit PAS être tronquée");
+        console.error("   - Le hostname doit se terminer par .supabase.co (pas .sup)");
       } else if (err.code === "ECONNREFUSED") {
         console.error(
           "❌ Connexion refusée: Vérifiez l'URL et les credentials"
         );
+        console.error(`   Hostname: ${hostnameInfo}`);
       } else if (err.code === "ETIMEDOUT") {
         console.error(
           "❌ Timeout de connexion: Vérifiez votre connexion réseau"
         );
+        console.error(`   Hostname: ${hostnameInfo}`);
       } else if (err.code === "28P01") {
         console.error(
           "❌ Erreur d'authentification: Vérifiez le mot de passe dans DATABASE_URL"
