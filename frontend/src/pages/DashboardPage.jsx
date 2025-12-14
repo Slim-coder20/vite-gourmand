@@ -32,8 +32,8 @@ function DashboardPage() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedImage , setSelectedImage ] = useState(null); 
-  const [imagePreview, setImagePreview] = useState(null); 
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   // useEffect 1 : Vérification authentification //
   useEffect(() => {
@@ -131,61 +131,61 @@ function DashboardPage() {
   // Nettoyer la preview quand le composant se démonte ou quand l'image change//
   useEffect(() => {
     return () => {
-      if(imagePreview) {
+      if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
     };
-  }[imagePreview]);
+  }, [imagePreview]);
 
   // ================== //
-  // Les actions effectué par l'utilisateur depuis son espace 
+  // Les actions effectué par l'utilisateur depuis son espace
   // ================== //
 
   // Fonction pour changer l'image de l'utilisateur //
   const handleImageChange = (e) => {
-    const file = e.target.files[0]; 
-    if(file) {
-      setSelectedImage(file); 
-      // Créer une preview 
-      const previewUrl = URL.createObjectURL(file); 
-      setImagePreview(previewUrl); 
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      // Créer une preview
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
     }
-  }; 
+  };
 
   // Fonction pour modifier les informations utilisateur
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     if (!userDashboard) return;
-  
+
     try {
       setIsLoading(true);
       setError(null);
       setSuccessMessage(null);
-  
-      let imageUrl = userDashboard.image; 
-  
+
+      let imageUrl = userDashboard.image;
+
       // Si une nouvelle image est sélectionnée, l'uploader d'abord
       if (selectedImage) {
         const uploadResult = await uploadUserAvatar(selectedImage);
         imageUrl = uploadResult.url;
       }
-  
+
       // Mettre à jour les données utilisateur avec la nouvelle image
       const updatedData = {
         ...userDashboard,
         image: imageUrl,
       };
-  
+
       const data = await updateUserDashboard(updatedData);
       setUserDashboard(data.user);
-      
+
       // Réinitialiser les states d'image
       setSelectedImage(null);
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
         setImagePreview(null);
       }
-  
+
       setSuccessMessage("Vos informations ont été modifiées avec succès !");
       setTimeout(() => {
         setSuccessMessage(null);
@@ -197,8 +197,6 @@ function DashboardPage() {
       setIsLoading(false);
     }
   };
-
-  
 
   // Fonction pour modifier une commande
   const handleUpdateCommand = async (commandeId, commandeData) => {
@@ -409,31 +407,31 @@ function DashboardPage() {
           )}
           <form onSubmit={handleUpdateUser}>
             {/* Image profile  */}
-  <div>
-  <label htmlFor="avatar">Photo de profil</label>
-  <input
-    type="file"
-    id="avatar"
-    name="avatar"
-    accept="image/jpeg,image/png,image/webp"
-    onChange={handleImageChange}
-  />
-  {/* Afficher la preview ou l'image actuelle */}
-    {(imagePreview || userDashboard?.image) && (
-    <div style={{ marginTop: "10px" }}>
-      <img
-        src={imagePreview || userDashboard?.image}
-        alt="Photo de profil"
-        style={{
-          width: "150px",
-          height: "150px",
-          objectFit: "cover",
-          borderRadius: "50%",
-        }}
-      />
-    </div>
-      )}
-      </div>
+            <div>
+              <label htmlFor="avatar">Photo de profil</label>
+              <input
+                type="file"
+                id="avatar"
+                name="avatar"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageChange}
+              />
+              {/* Afficher la preview ou l'image actuelle */}
+              {(imagePreview || userDashboard?.image) && (
+                <div style={{ marginTop: "10px" }}>
+                  <img
+                    src={imagePreview || userDashboard?.image}
+                    alt="Photo de profil"
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
             <div>
               <label htmlFor="prenom">Prénom</label>
               <input
