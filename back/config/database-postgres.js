@@ -148,13 +148,15 @@ if (process.env.DATABASE_URL) {
           `  postgresql://postgres:[password]@${hostname}:5432/postgres`
         );
         console.error("");
-        console.error("SOLUTION 2 - Transaction Pooler:");
+        console.error(
+          "SOLUTION 2 - Session Pooler (recommandé pour serverless):"
+        );
         console.error("  Allez dans Supabase Dashboard → Settings → Database");
         console.error(
-          "  Copiez la connection string du 'Transaction Pooler' (port 6543)"
+          "  Copiez la connection string du 'Session Pooler' (port 5432)"
         );
         console.error(
-          "  Format: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
+          "  Format: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres"
         );
       }
     } catch (e) {
@@ -364,6 +366,20 @@ Object.defineProperty(poolQuery, "insertId", {
   },
 });
 
-// Exporter poolQuery comme interface principale
+// Créer un objet compatible avec mysql2 qui a une méthode query()
+// Les routes utilisent pool.query(), donc on doit exporter un objet avec cette méthode
+const poolWrapper = {
+  query: poolQuery,
+  // Exposer insertId pour compatibilité
+  get insertId() {
+    return poolQuery.insertId;
+  },
+  set insertId(value) {
+    poolQuery.insertId = value;
+  },
+};
+
+// Exporter l'objet wrapper comme interface principale
 // Compatible avec l'utilisation existante : const pool = require("../../config/database");
-module.exports = poolQuery;
+// Les routes peuvent utiliser pool.query() comme avec MySQL
+module.exports = poolWrapper;

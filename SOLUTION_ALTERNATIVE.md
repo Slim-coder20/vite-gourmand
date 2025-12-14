@@ -5,7 +5,7 @@ L'erreur `getaddrinfo ENOTFOUND db.wfbwmyeyudxqqidgsmcc.supabase.co` persiste ma
 - ✅ URL correcte et complète
 - ✅ Configuration SSL correcte
 - ✅ Lazy initialization du pool
-- ✅ Transaction Pooler (testé précédemment)
+- ✅ Session Pooler (testé précédemment)
 
 ## Solutions à essayer
 
