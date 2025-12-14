@@ -188,7 +188,7 @@ function getPool() {
   if (!pool) {
     console.log("🔧 Création du pool PostgreSQL (lazy initialization)");
     pool = new Pool(poolConfig);
-    
+
     // Gestion des erreurs de connexion
     pool.on("error", (err) => {
       console.error("❌ PostgreSQL Pool Error:", err);
@@ -198,7 +198,13 @@ function getPool() {
         );
       } else if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
         console.error("DNS resolution failed. Check DATABASE_URL hostname.");
-        console.error(`Hostname: ${poolConfig.connectionString ? new URL(poolConfig.connectionString).hostname : 'N/A'}`);
+        console.error(
+          `Hostname: ${
+            poolConfig.connectionString
+              ? new URL(poolConfig.connectionString).hostname
+              : "N/A"
+          }`
+        );
       } else {
         console.error("PostgreSQL pool error details:", {
           code: err.code,
@@ -223,104 +229,8 @@ if (poolConfig.connectionString) {
   console.log(`  - Connection string: ${urlPreview}`);
 }
 
-// Test de connexion au démarrage pour diagnostiquer les problèmes
-// Note: Dans un environnement serverless, cette connexion peut ne pas être établie immédiatement
-// Utiliser un délai plus court pour serverless (Vercel)
-const testDelay = process.env.VERCEL ? 100 : 1000; // 100ms pour Vercel, 1s pour local
-
-// Test de connexion désactivé - le pool sera créé à la demande
-// setTimeout(() => {
-//   getPool()
-//     .query("SELECT NOW() as current_time")
-    .then((result) => {
-      console.log("✅ PostgreSQL pool créé et connexion testée avec succès");
-      console.log(`Heure serveur PostgreSQL: ${result.rows[0].current_time}`);
-    })
-    .catch((err) => {
-      console.error("❌ Erreur lors du test de connexion PostgreSQL:", err);
-      console.error(`Code d'erreur: ${err.code}`);
-      console.error(`Message: ${err.message}`);
-
-      // Extraire le hostname de l'URL pour diagnostic
-      let hostnameInfo = "N/A";
-      try {
-        const url = new URL(process.env.DATABASE_URL);
-        hostnameInfo = url.hostname;
-        console.error(`🔍 Hostname utilisé: ${hostnameInfo}`);
-      } catch (e) {
-        console.error(`🔍 Impossible d'extraire le hostname de DATABASE_URL`);
-      }
-
-      console.error("Vérifiez que DATABASE_URL est correctement configurée");
-
-      if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
-        console.error("❌ Erreur DNS: Impossible de résoudre le nom d'hôte");
-        console.error(`   Hostname qui a échoué: ${hostnameInfo}`);
-        console.error(
-          "   Vérifiez que l'URL de connexion Supabase est correcte"
-        );
-        console.error(
-          "   Le hostname doit être COMPLET (ex: db.wfbwmyeyudxqqidgsmcc.supabase.co)"
-        );
-        console.error("");
-        console.error("Formats Supabase valides:");
-        console.error(
-          "  1. Direct: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
-        );
-        console.error(
-          "  2. Pooler: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
-        );
-        console.error("");
-        console.error(
-          "⚠️ Vérifiez dans Vercel → Settings → Environment Variables:"
-        );
-        console.error("   - DATABASE_URL ne doit PAS être tronquée");
-        console.error(
-          "   - Le hostname doit se terminer par .supabase.co (pas .sup)"
-        );
-      } else if (err.code === "ECONNREFUSED") {
-        console.error(
-          "❌ Connexion refusée: Vérifiez l'URL et les credentials"
-        );
-        console.error(`   Hostname: ${hostnameInfo}`);
-      } else if (err.code === "ETIMEDOUT") {
-        console.error(
-          "❌ Timeout de connexion: Vérifiez votre connexion réseau"
-        );
-        console.error(`   Hostname: ${hostnameInfo}`);
-      } else if (err.code === "28P01") {
-        console.error(
-          "❌ Erreur d'authentification: Vérifiez le mot de passe dans DATABASE_URL"
-        );
-      } else if (err.code === "3D000") {
-        console.error(
-          "❌ Base de données introuvable: Vérifiez le nom de la base dans DATABASE_URL"
-        );
-      }
-
-      // Ne pas throw pour éviter de bloquer le démarrage, mais logger l'erreur
-      console.error(
-        "⚠️ L'application continuera mais les requêtes PostgreSQL échoueront"
-      );
-    });
-});
-// Gestion des erreurs de connexion
-pool.on("error", (err) => {
-  console.error("❌ PostgreSQL Pool Error:", err);
-  if (err.code === "ECONNREFUSED") {
-    console.error(
-      "PostgreSQL connection refused. Check your connection settings."
-    );
-  } else if (err.code === "ENOTFOUND" || err.code === "EAI_AGAIN") {
-    console.error("DNS resolution failed. Check DATABASE_URL hostname.");
-  } else {
-    // Ne pas throw pour éviter de crasher l'application
-    console.error("PostgreSQL pool error details:", {
-      code: err.code,
-      message: err.message,
-    });
-  }
-});
+// Test de connexion désactivé - le pool sera créé à la demande lors de la première requête
+// Cela évite les problèmes DNS au démarrage dans un environnement serverless
 
 /**
  * Convertit les fonctions SQL MySQL en équivalents PostgreSQL
@@ -398,7 +308,7 @@ const poolQuery = async (text, params) => {
   try {
     // Obtenir le pool (créé à la demande)
     const currentPool = getPool();
-    
+
     // 1. Convertir les fonctions MySQL en PostgreSQL
     convertedText = convertMySQLToPostgreSQL(text);
 
