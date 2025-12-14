@@ -331,10 +331,32 @@ router.post("/forgot-password", async (req, res) => {
     );
 
     // Envoyer l'email de réinitialisation
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    // Déterminer l'URL du frontend (production ou développement)
+    let frontendUrl = process.env.FRONTEND_URL;
+
+    // Si FRONTEND_URL n'est pas défini, essayer de le déduire depuis les headers
+    if (!frontendUrl) {
+      // En production Vercel, utiliser l'URL de la requête
+      const protocol =
+        req.headers["x-forwarded-proto"] || req.protocol || "https";
+      const host = req.headers.host || req.headers["x-forwarded-host"];
+      if (host) {
+        frontendUrl = `${protocol}://${host}`;
+      } else {
+        // Fallback pour développement
+        frontendUrl = "http://localhost:5173";
+      }
+    }
+
+    console.log(
+      `🔍 Frontend URL utilisée pour le reset password: ${frontendUrl}`
+    );
+    console.log(`🔍 Reset token généré: ${resetToken}`);
+    console.log(`🔍 Lien complet: ${frontendUrl}/reset-password/${resetToken}`);
+
     try {
       await sendPasswordResetEmail(user.email, resetToken, frontendUrl);
-      console.log(`Email de réinitialisation envoyé à ${user.email}`);
+      console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
     } catch (emailError) {
       console.error("Erreur lors de l'envoi de l'email :", emailError);
       // On ne bloque pas la réponse si l'email échoue, pour ne pas révéler si l'email existe
