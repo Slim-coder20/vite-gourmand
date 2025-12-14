@@ -84,11 +84,14 @@ function DashboardPage() {
     if (commandeParam && isAuthenticated) {
       const commandeId = parseInt(commandeParam);
       if (!isNaN(commandeId)) {
-        // Vérifier si la commande existe et est terminée
+        // Vérifier si la commande existe et est livrée ou terminée
         const commande = userCommands.find(
           (cmd) => cmd.commande_id === commandeId
         );
-        if (commande && commande.statut === "terminée") {
+        if (
+          commande &&
+          (commande.statut === "livré" || commande.statut === "terminée")
+        ) {
           // Ouvrir automatiquement le formulaire d'avis
           setCreatingAvisForCommandId(commandeId);
           // Nettoyer l'URL
@@ -288,6 +291,7 @@ function DashboardPage() {
                   )}
                   {(command.statut === "accepté" ||
                     command.statut === "en préparation" ||
+                    command.statut === "livré" ||
                     command.statut === "terminée") && (
                     <button
                       onClick={() => setSelectedCommandId(command.commande_id)}
@@ -295,7 +299,8 @@ function DashboardPage() {
                       Voir le suivi
                     </button>
                   )}
-                  {command.statut === "terminée" && (
+                  {(command.statut === "livré" ||
+                    command.statut === "terminée") && (
                     <button
                       onClick={() =>
                         setCreatingAvisForCommandId(command.commande_id)

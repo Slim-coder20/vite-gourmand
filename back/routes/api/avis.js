@@ -116,11 +116,11 @@ router.post("/commande/:commandeId", authenticateToken, async (req, res) => {
 
     const commande = commandeRows[0];
 
-    // 2. Vérification que la commande est "terminée" //
-    // l'avis ne peut être créé que si la commande est "terminée"
-    if (commande.statut !== "terminée") {
+    // 2. Vérification que la commande est "livré" ou "terminée" //
+    // l'avis ne peut être créé que si la commande est "livré" ou "terminée"
+    if (commande.statut !== "livré" && commande.statut !== "terminée") {
       return res.status(403).json({
-        message: "Vous ne pouvez donner un avis que pour une commande terminée",
+        message: "Vous ne pouvez donner un avis que pour une commande livrée ou terminée",
       });
     }
 
