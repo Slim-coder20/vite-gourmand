@@ -299,6 +299,34 @@ function convertMySQLToPostgreSQL(sql) {
     }
   );
 
+  // 5. Convertir 'user' (mot réservé PostgreSQL) en "user" dans les noms de tables
+  // PostgreSQL nécessite des guillemets pour les mots réservés
+  // Remplacer user par "user" dans les contextes de noms de tables
+
+  // Pattern 1: FROM user, JOIN user, UPDATE user, INSERT INTO user
+  converted = converted.replace(
+    /\b(FROM|JOIN|INTO|UPDATE)\s+user(\s|$|,|\.)/gi,
+    (match, keyword, after) => {
+      return `${keyword} "user"${after}`;
+    }
+  );
+
+  // Pattern 2: FROM user u, JOIN user u, LEFT JOIN user u, etc.
+  converted = converted.replace(
+    /\b(FROM|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|INNER\s+JOIN|UPDATE)\s+user\s+([a-zA-Z_][a-zA-Z0-9_]*)/gi,
+    (match, keyword, alias) => {
+      return `${keyword} "user" ${alias}`;
+    }
+  );
+
+  // Pattern 3: ON ... user.user_id ou user.user_id = ...
+  converted = converted.replace(
+    /\buser\.([a-zA-Z_][a-zA-Z0-9_]*)/gi,
+    (match, column) => {
+      return `"user".${column}`;
+    }
+  );
+
   return converted;
 }
 
