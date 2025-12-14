@@ -180,7 +180,9 @@ router.post("/commande/:commandeId", authenticateToken, async (req, res) => {
 // Création de la route GET pour récupérer tous les avis publics //
 router.get("/public", async (req, res) => {
   try {
+    console.log("📥 Route GET /api/avis/public appelée");
     // Récupérer tous les avis public validés avec les informations de l'utilisateur
+    console.log("🔍 Exécution requête SQL pour récupérer les avis publics");
     const [rows] = await pool.query(
       `SELECT 
         a.avis_id,
@@ -228,14 +230,19 @@ router.get("/public", async (req, res) => {
       };
     });
 
+    console.log(`✅ ${avisFormatted.length} avis publics récupérés`);
     res.status(200).json(avisFormatted);
     console.log("Avis publics récupérés avec succès");
   } catch (error) {
+    console.error("❌ Erreur lors de la récupération des avis publics :", error);
+    console.error("   Code:", error.code);
+    console.error("   Message:", error.message);
+    console.error("   Stack:", error.stack);
     res.status(500).json({
       message: "Erreur lors de la récupération des avis publics",
       error: error.message,
+      code: error.code,
     });
-    console.error("Erreur lors de la récupération des avis publics :", error);
   }
 });
 
