@@ -220,7 +220,7 @@ module.exports = async (req, res) => {
     return app(req, res);
   } catch (error) {
     console.error("❌ Error in API handler:", error);
-    // S'assurer que même les erreurs retournent du JSON
+    // S'assurer que même les erreurs retournent du JSON et gardent les headers CORS
     res.setHeader("Content-Type", "application/json");
     return res.status(500).json({
       error: "Internal server error",
