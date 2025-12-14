@@ -99,7 +99,7 @@ router.get(
           u.prenom as client_prenom
         FROM commande c
         LEFT JOIN user u ON c.user_id = u.user_id
-        WHERE c.date_commande >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        WHERE c.date_commande >= NOW() - INTERVAL '24 HOUR'
         ORDER BY c.date_commande DESC
         LIMIT 10`
       );

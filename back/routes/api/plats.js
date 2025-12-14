@@ -145,11 +145,20 @@ router.put("/:id", authenticateToken, checkEmployeeRole, async (req, res) => {
         let allergeneId;
         if (allergeneRows.length === 0) {
           // Créer l'allergène s'il n'existe pas
-          const [insertResult] = await pool.query(
-            "INSERT INTO allergene (libelle) VALUES (?)",
-            [allergeneLibelle]
-          );
-          allergeneId = insertResult.insertId;
+          const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+          if (isPostgreSQL) {
+            const [insertResult] = await pool.query(
+              "INSERT INTO allergene (libelle) VALUES (?) RETURNING allergene_id",
+              [allergeneLibelle]
+            );
+            allergeneId = pool.insertId || insertResult[0]?.allergene_id;
+          } else {
+            const [insertResult] = await pool.query(
+              "INSERT INTO allergene (libelle) VALUES (?)",
+              [allergeneLibelle]
+            );
+            allergeneId = insertResult.insertId;
+          }
         } else {
           allergeneId = allergeneRows[0].allergene_id;
         }

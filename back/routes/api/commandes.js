@@ -210,8 +210,10 @@ router.post("/", authenticateToken, async (req, res) => {
     const heureLivraisonComplete = `${date_prestation} ${heure_livraison}:00`;
 
     // Détecter si on utilise PostgreSQL
-    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
-    
+    const isPostgreSQL =
+      process.env.DB_TYPE === "postgres" ||
+      process.env.DB_TYPE === "postgresql";
+
     // 13. Insertion de la commande dans la base de données //
     let result, commandeId;
     if (isPostgreSQL) {
@@ -279,7 +281,7 @@ router.post("/", authenticateToken, async (req, res) => {
       );
       commandeId = result.insertId;
     }
-    
+
     if (!commandeId) {
       return res.status(500).json({
         message: "Erreur lors de la création de la commande : ID non récupéré",

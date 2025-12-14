@@ -35,16 +35,36 @@ router.post("/", authenticateToken, async (req, res) => {
     // Récupération de l'id de l'utilisateur authentifié (déjà vérifié par le middleware)
     const userId = req.user.userId;
 
+    // Détecter si on utilise PostgreSQL
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
     // Insertion de l'avis dans la base de données
-    const [result] = await pool.query(
-      "INSERT INTO avis (note, description, statut, user_id) VALUES (?, ?, ?, ?)",
-      [noteNum, description, statut, userId]
-    );
+    let result, avisId;
+    if (isPostgreSQL) {
+      const [insertResult] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id) VALUES (?, ?, ?, ?) RETURNING avis_id",
+        [noteNum, description, statut, userId]
+      );
+      avisId = pool.insertId || insertResult[0]?.avis_id;
+      result = { insertId: avisId };
+    } else {
+      [result] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id) VALUES (?, ?, ?, ?)",
+        [noteNum, description, statut, userId]
+      );
+      avisId = result.insertId;
+    }
+    
+    if (!avisId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création de l'avis : ID non récupéré",
+      });
+    }
 
     // Récupération de l'avis créé
     const [avisRows] = await pool.query(
       "SELECT * FROM avis WHERE avis_id = ?",
-      [result.insertId]
+      [avisId]
     );
 
     if (avisRows.length === 0) {
@@ -135,15 +155,34 @@ router.post("/commande/:commandeId", authenticateToken, async (req, res) => {
 
     // 5. Insertion de l'avis dans la base de données //
     // Statut par défaut : "non validée" (sera validé par un admin ensuite)
-    const [result] = await pool.query(
-      "INSERT INTO avis (note, description, statut, user_id, commande_id) VALUES (?, ?, 'non validée', ?, ?)",
-      [noteNum, description, userId, commandeId]
-    );
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
+    let result, avisId;
+    if (isPostgreSQL) {
+      const [insertResult] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id, commande_id) VALUES (?, ?, 'non validée', ?, ?) RETURNING avis_id",
+        [noteNum, description, userId, commandeId]
+      );
+      avisId = pool.insertId || insertResult[0]?.avis_id;
+      result = { insertId: avisId };
+    } else {
+      [result] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id, commande_id) VALUES (?, ?, 'non validée', ?, ?)",
+        [noteNum, description, userId, commandeId]
+      );
+      avisId = result.insertId;
+    }
+    
+    if (!avisId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création de l'avis : ID non récupéré",
+      });
+    }
 
     // 6. Récupération de l'avis créé //
     const [avisRows] = await pool.query(
       "SELECT * FROM avis WHERE avis_id = ?",
-      [result.insertId]
+      [avisId]
     );
 
     if (avisRows.length === 0) {

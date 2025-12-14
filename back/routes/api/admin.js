@@ -105,7 +105,7 @@ router.get(
       LEFT JOIN user u ON c.user_id = u.user_id
       LEFT JOIN commande_menu cm ON c.commande_id = cm.commande_id
       LEFT JOIN menu m ON cm.menu_id = m.menu_id
-      WHERE c.date_commande >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+      WHERE c.date_commande >= NOW() - INTERVAL '24 HOUR'
       ORDER BY c.date_commande DESC
       LIMIT 10`
       );
@@ -408,15 +408,34 @@ router.post(
 
       // 9. Insertion de l'employé dans la base de données
       // On force role_id = 3 et on ne demande que email et password
-      const [result] = await pool.query(
-        "INSERT INTO user (email, password, role_id) VALUES (?, ?, ?)",
-        [email, hashedPassword, roleId]
-      );
+      const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+      
+      let result, userId;
+      if (isPostgreSQL) {
+        const [insertResult] = await pool.query(
+          'INSERT INTO "user" (email, password, role_id) VALUES (?, ?, ?) RETURNING user_id',
+          [email, hashedPassword, roleId]
+        );
+        userId = pool.insertId || insertResult[0]?.user_id;
+        result = { insertId: userId };
+      } else {
+        [result] = await pool.query(
+          "INSERT INTO user (email, password, role_id) VALUES (?, ?, ?)",
+          [email, hashedPassword, roleId]
+        );
+        userId = result.insertId;
+      }
+      
+      if (!userId) {
+        return res.status(500).json({
+          message: "Erreur lors de la création de l'employé : ID non récupéré",
+        });
+      }
 
       // 10. Récupérer l'employé créé
       const [employeRows] = await pool.query(
-        "SELECT user_id, email, role_id FROM user WHERE user_id = ?",
-        [result.insertId]
+        'SELECT user_id, email, role_id FROM "user" WHERE user_id = ?',
+        [userId]
       );
 
       if (employeRows.length === 0) {

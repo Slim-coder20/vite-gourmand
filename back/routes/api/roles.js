@@ -54,14 +54,34 @@ router.post("/", authenticateToken, async (req, res) => {
       });
     }
 
+    // Détecter si on utilise PostgreSQL
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
     // Insertion du nouveau rôle
-    const [result] = await pool.query("INSERT INTO role (libele) VALUES (?)", [
-      libele,
-    ]);
+    let result, roleId;
+    if (isPostgreSQL) {
+      const [insertResult] = await pool.query(
+        "INSERT INTO role (libele) VALUES (?) RETURNING role_id",
+        [libele]
+      );
+      roleId = pool.insertId || insertResult[0]?.role_id;
+      result = { insertId: roleId };
+    } else {
+      [result] = await pool.query("INSERT INTO role (libele) VALUES (?)", [
+        libele,
+      ]);
+      roleId = result.insertId;
+    }
+    
+    if (!roleId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création du rôle : ID non récupéré",
+      });
+    }
 
     // Récupération du rôle créé
     const [rows] = await pool.query("SELECT * FROM role WHERE role_id = ?", [
-      result.insertId,
+      roleId,
     ]);
 
     res.status(201).json(rows[0]);
