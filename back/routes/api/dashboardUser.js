@@ -31,6 +31,7 @@ router.get("/", authenticateToken, async (req, res) => {
         ville: user.ville,
         pays: user.pays,
         role_id: user.role_id,
+        image: user.image,
       },
     });
   } catch (error) {
@@ -126,6 +127,7 @@ router.put("/", authenticateToken, async (req, res) => {
         ville: updatedUser.ville,
         pays: updatedUser.pays,
         role_id: updatedUser.role_id,
+        image: updatedUser.image,
       },
     });
   } catch (error) {
