@@ -152,9 +152,9 @@ module.exports = async (req, res) => {
   console.log(`   Headers:`, {
     host: req.headers.host,
     origin: req.headers.origin,
-    'user-agent': req.headers['user-agent']?.substring(0, 50),
+    "user-agent": req.headers["user-agent"]?.substring(0, 50),
   });
-  
+
   try {
     // Gérer CORS manuellement AVANT de modifier req.url
     const origin = req.headers.origin;
