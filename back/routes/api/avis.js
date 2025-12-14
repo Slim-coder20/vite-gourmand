@@ -232,9 +232,10 @@ router.get("/public", async (req, res) => {
         a.image,
         a.statut,
         u.nom as user_nom,
-        u.prenom as user_prenom
+        u.prenom as user_prenom,
+        u.image as user_image
       FROM avis a
-      LEFT JOIN user u ON a.user_id = u.user_id
+      LEFT JOIN "user" u ON a.user_id = u.user_id
       WHERE a.statut = 'validée'
       ORDER BY a.avis_id DESC
       LIMIT 10`
@@ -260,14 +261,33 @@ router.get("/public", async (req, res) => {
         }
       }
 
+      // Formater l'image de profil de l'utilisateur
+      let userImagePath = null;
+      if (avis.user_image) {
+        const userImgTrimmed = avis.user_image.trim();
+        // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
+        if (
+          userImgTrimmed.startsWith("http://") ||
+          userImgTrimmed.startsWith("https://")
+        ) {
+          userImagePath = userImgTrimmed;
+        } else {
+          // Sinon, on ajoute le chemin de base pour les images locales
+          userImagePath = userImgTrimmed.startsWith("/")
+            ? userImgTrimmed
+            : `/images/users/${userImgTrimmed}`;
+        }
+      }
+
       return {
         avis_id: avis.avis_id,
         note: avis.note,
         description: avis.description,
-        image: imagePath, // Chemin formaté de l'image
+        image: imagePath, // Image de l'avis (si présente)
         statut: avis.statut,
         user_nom: avis.user_nom,
         user_prenom: avis.user_prenom,
+        user_image: userImagePath, // Image de profil de l'utilisateur
       };
     });
 

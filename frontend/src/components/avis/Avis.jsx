@@ -72,9 +72,9 @@ function Avis() {
               <div key={item.avis_id} className={styles.avisCard}>
                 {/* Illustration/Image de profil */}
                 <div className={styles.avisIllustration}>
-                  {item.image ? (
+                  {item.user_image ? (
                     <img
-                      src={item.image}
+                      src={item.user_image}
                       alt={`Photo de profil de ${item.user_nom} ${item.user_prenom}`}
                       className={styles.avisImage}
                       onError={(e) => {
@@ -89,7 +89,7 @@ function Avis() {
                         e.target.dataset.fallbackUsed = "true";
                         console.error(
                           "Erreur de chargement de l'image:",
-                          item.image
+                          item.user_image
                         );
                         // Essayer l'image par défaut (si elle existe)
                         e.target.src = "/images/avis/default-person.jpg";
