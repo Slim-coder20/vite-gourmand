@@ -16,11 +16,18 @@ function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("🔍 ResetPassword component monté");
+    console.log("🔍 URL complète:", window.location.href);
+    console.log("🔍 Pathname:", window.location.pathname);
+    console.log("🔍 Token depuis useParams:", token);
+
     if (!token) {
+      console.error("❌ Token manquant dans l'URL");
       setError("Token de réinitialisation manquant");
     } else {
       // Décoder le token au cas où il serait encodé dans l'URL
-      console.log("Token reçu depuis l'URL:", token);
+      console.log("✅ Token reçu depuis l'URL:", token);
+      console.log("✅ Token length:", token.length);
     }
   }, [token]);
 
