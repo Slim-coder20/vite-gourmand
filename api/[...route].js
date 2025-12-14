@@ -15,7 +15,25 @@ const horairesRouter = require("../back/routes/api/horaires");
 const menusRouter = require("../back/routes/api/menus");
 const platsRouter = require("../back/routes/api/plats");
 const rolesRouter = require("../back/routes/api/roles");
-const userRouter = require("../back/routes/api/user");
+
+// Import userRouter avec gestion d'erreur (peut planter si Supabase mal configuré)
+let userRouter;
+try {
+  userRouter = require("../back/routes/api/user");
+  console.log("✅ Route /api/user chargée");
+} catch (error) {
+  console.error("❌ Erreur lors du chargement de userRouter:", error);
+  // Créer un router vide pour éviter les crashes
+  const express = require("express");
+  userRouter = express.Router();
+  userRouter.all("*", (req, res) => {
+    res
+      .status(503)
+      .json({
+        message: "Service d'upload d'images temporairement indisponible",
+      });
+  });
+}
 
 const app = express();
 

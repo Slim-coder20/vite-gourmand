@@ -6,15 +6,21 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 let supabase = null;
 
 // Initialiser le client Supabase seulement si les variables sont définies
-if (supabaseUrl && supabaseServiceKey) {
-  supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-} else {
-  console.warn("Variables d'environnement Supabase manquantes - upload d'images désactivé");
+try {
+  if (supabaseUrl && supabaseServiceKey) {
+    supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+    console.log("✅ Client Supabase Storage initialisé");
+  } else {
+    console.warn("Variables d'environnement Supabase manquantes - upload d'images désactivé");
+  }
+} catch (error) {
+  console.error("❌ Erreur lors de l'initialisation du client Supabase:", error);
+  supabase = null;
 }
 
 const BUCKET_NAME = "user-avatars";
