@@ -61,10 +61,10 @@ if (DB_TYPE === "postgres" || DB_TYPE === "postgresql") {
   // Un pool permet de réutiliser les connexions et d'améliorer les performances
   pool = mysql2.createPool(poolConfig).promise();
 
-  // Forcer l'encodage UTF-8 pour toutes les connexions du pool
-  pool.on("connection", (connection) => {
-    connection.query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
-  });
+// Forcer l'encodage UTF-8 pour toutes les connexions du pool
+pool.on("connection", (connection) => {
+  connection.query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+});
 
   // Gestion des erreurs de connexion
   pool.on("error", (err) => {

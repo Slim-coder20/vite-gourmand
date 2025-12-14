@@ -3,6 +3,8 @@ const router = express.Router();
 const pool = require("../../config/database");
 const authenticateToken = require("../../middleware/auth");
 
+console.log("🔧 Router /api/avis initialisé");
+
 // Création de la route POST pour la création d'un avis
 router.post("/", authenticateToken, async (req, res) => {
   try {

@@ -49,9 +49,11 @@ app.use(async (req, res, next) => {
 });
 
 // Montage de toutes les routes
+console.log("🔧 Montage des routes API...");
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/avis", avisRouter);
+console.log("✅ Route /api/avis montée");
 app.use("/api/commandes", commandesRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/dashboard/user", dashboardUserRouter);
@@ -60,6 +62,7 @@ app.use("/api/horaires", horairesRouter);
 app.use("/api/menus", menusRouter);
 app.use("/api/plats", platsRouter);
 app.use("/api/roles", rolesRouter);
+console.log("✅ Toutes les routes montées");
 
 // Route de santé
 app.get("/api/health", (req, res) => {
@@ -71,10 +74,12 @@ app.get("/api/test-db", async (req, res) => {
   try {
     const pool = require("../back/config/database");
     console.log("🔍 Test de connexion PostgreSQL...");
-    
+
     // Test de connexion simple
-    const [rows] = await pool.query("SELECT NOW() as current_time, version() as pg_version");
-    
+    const [rows] = await pool.query(
+      "SELECT NOW() as current_time, version() as pg_version"
+    );
+
     res.json({
       status: "ok",
       message: "Connexion PostgreSQL réussie",
@@ -84,7 +89,7 @@ app.get("/api/test-db", async (req, res) => {
       },
       env: {
         DB_TYPE: process.env.DB_TYPE || "non défini",
-        DATABASE_URL: process.env.DATABASE_URL 
+        DATABASE_URL: process.env.DATABASE_URL
           ? process.env.DATABASE_URL.replace(/:\/\/[^:]+:[^@]+@/, "://***:***@")
           : "non définie",
       },
@@ -101,7 +106,7 @@ app.get("/api/test-db", async (req, res) => {
       },
       env: {
         DB_TYPE: process.env.DB_TYPE || "non défini",
-        DATABASE_URL: process.env.DATABASE_URL 
+        DATABASE_URL: process.env.DATABASE_URL
           ? process.env.DATABASE_URL.replace(/:\/\/[^:]+:[^@]+@/, "://***:***@")
           : "non définie",
       },
@@ -113,6 +118,11 @@ app.get("/api/test-db", async (req, res) => {
 app.use((req, res) => {
   console.error(
     `❌ Route not found: ${req.method} ${req.originalUrl || req.url}`
+  );
+  console.error(`   req.path: ${req.path}`);
+  console.error(`   req.baseUrl: ${req.baseUrl || "undefined"}`);
+  console.error(
+    `   Routes disponibles: /api/auth, /api/admin, /api/avis, /api/commandes, etc.`
   );
   res.status(404).json({
     error: "Route not found",
@@ -163,6 +173,10 @@ module.exports = async (req, res) => {
     // On doit normaliser pour avoir toujours '/api/...'
     let originalUrl = req.url || "/";
 
+    console.log(`🔍 URL originale reçue: ${originalUrl}`);
+    console.log(`🔍 req.path: ${req.path || "undefined"}`);
+    console.log(`🔍 req.originalUrl: ${req.originalUrl || "undefined"}`);
+
     // Si l'URL commence déjà par /api, on la garde telle quelle
     // Sinon, on l'ajoute (cas où Vercel passe juste le chemin après /api)
     if (!originalUrl.startsWith("/api")) {
@@ -173,6 +187,7 @@ module.exports = async (req, res) => {
       } else {
         originalUrl = `/api/${originalUrl}`;
       }
+      console.log(`🔧 URL normalisée: ${originalUrl}`);
     }
 
     req.url = originalUrl;
