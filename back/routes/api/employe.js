@@ -684,7 +684,7 @@ router.get(
         COUNT(*) as total,
         COUNT(CASE WHEN statut = 'validée' THEN 1 END) as valides,
         COUNT(CASE WHEN statut = 'non validée' THEN 1 END) as en_attente,
-        AVG(CAST(note AS UNSIGNED)) as note_moyenne
+        AVG(CAST(note AS INTEGER)) as note_moyenne
       FROM avis`
       );
 

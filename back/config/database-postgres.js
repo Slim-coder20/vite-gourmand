@@ -242,6 +242,9 @@ if (poolConfig.connectionString) {
 function convertMySQLToPostgreSQL(sql) {
   let converted = sql;
 
+  // 0. UNSIGNED → supprimer (PostgreSQL n'a pas UNSIGNED, utiliser INTEGER)
+  converted = converted.replace(/\bUNSIGNED\b/gi, "");
+
   // 1. CURDATE() → CURRENT_DATE
   converted = converted.replace(/\bCURDATE\(\)/gi, "CURRENT_DATE");
 
