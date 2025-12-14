@@ -147,6 +147,14 @@ app.use((err, req, res, next) => {
 const { parse } = require("url");
 
 module.exports = async (req, res) => {
+  // Log au tout début pour voir si le handler est appelé
+  console.log(`🚀 Handler Vercel appelé: ${req.method} ${req.url}`);
+  console.log(`   Headers:`, {
+    host: req.headers.host,
+    origin: req.headers.origin,
+    'user-agent': req.headers['user-agent']?.substring(0, 50),
+  });
+  
   try {
     // Gérer CORS manuellement AVANT de modifier req.url
     const origin = req.headers.origin;
