@@ -15,6 +15,7 @@ const horairesRouter = require("../back/routes/api/horaires");
 const menusRouter = require("../back/routes/api/menus");
 const platsRouter = require("../back/routes/api/plats");
 const rolesRouter = require("../back/routes/api/roles");
+const userRouter = require("../back/routes/api/user");
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use("/api/horaires", horairesRouter);
 app.use("/api/menus", menusRouter);
 app.use("/api/plats", platsRouter);
 app.use("/api/roles", rolesRouter);
+app.use("/api/user", userRouter);
 console.log("✅ Toutes les routes montées");
 
 // Route de santé

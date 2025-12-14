@@ -153,11 +153,11 @@ router.put("/:id", authenticateToken, checkEmployeeRole, async (req, res) => {
             );
             allergeneId = pool.insertId || insertResult[0]?.allergene_id;
           } else {
-            const [insertResult] = await pool.query(
-              "INSERT INTO allergene (libelle) VALUES (?)",
-              [allergeneLibelle]
-            );
-            allergeneId = insertResult.insertId;
+          const [insertResult] = await pool.query(
+            "INSERT INTO allergene (libelle) VALUES (?)",
+            [allergeneLibelle]
+          );
+          allergeneId = insertResult.insertId;
           }
         } else {
           allergeneId = allergeneRows[0].allergene_id;

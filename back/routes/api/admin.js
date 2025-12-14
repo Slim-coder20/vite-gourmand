@@ -420,9 +420,9 @@ router.post(
         result = { insertId: userId };
       } else {
         [result] = await pool.query(
-          "INSERT INTO user (email, password, role_id) VALUES (?, ?, ?)",
-          [email, hashedPassword, roleId]
-        );
+        "INSERT INTO user (email, password, role_id) VALUES (?, ?, ?)",
+        [email, hashedPassword, roleId]
+      );
         userId = result.insertId;
       }
       

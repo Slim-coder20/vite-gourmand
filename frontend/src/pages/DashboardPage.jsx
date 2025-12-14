@@ -15,6 +15,7 @@ import {
 import { createAvisfromCommande } from "../services/avisService";
 import EditCommandForm from "../components/dashboard/EditCommandForm";
 import CreateAvisForm from "../components/dashboard/CreateAvisForm";
+import { uploadUserAvatar } from "../services/uploadUserAvatar";
 
 function DashboardPage() {
   const [userDashboard, setUserDashboard] = useState(null);
@@ -31,6 +32,8 @@ function DashboardPage() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedImage , setSelectedImage ] = useState(null); 
+  const [imagePreview, setImagePreview] = useState(null); 
 
   // useEffect 1 : Vérification authentification //
   useEffect(() => {
@@ -125,21 +128,65 @@ function DashboardPage() {
     loadCommandHistory();
   }, [selectedCommandId]);
 
-  // Fonctions pour les actions utilisateur  //
+  // Nettoyer la preview quand le composant se démonte ou quand l'image change//
+  useEffect(() => {
+    return () => {
+      if(imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }[imagePreview]);
+
+  // ================== //
+  // Les actions effectué par l'utilisateur depuis son espace 
+  // ================== //
+
+  // Fonction pour changer l'image de l'utilisateur //
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]; 
+    if(file) {
+      setSelectedImage(file); 
+      // Créer une preview 
+      const previewUrl = URL.createObjectURL(file); 
+      setImagePreview(previewUrl); 
+    }
+  }; 
 
   // Fonction pour modifier les informations utilisateur
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     if (!userDashboard) return;
-
+  
     try {
       setIsLoading(true);
       setError(null);
       setSuccessMessage(null);
-      const data = await updateUserDashboard(userDashboard);
+  
+      let imageUrl = userDashboard.image; 
+  
+      // Si une nouvelle image est sélectionnée, l'uploader d'abord
+      if (selectedImage) {
+        const uploadResult = await uploadUserAvatar(selectedImage);
+        imageUrl = uploadResult.url;
+      }
+  
+      // Mettre à jour les données utilisateur avec la nouvelle image
+      const updatedData = {
+        ...userDashboard,
+        image: imageUrl,
+      };
+  
+      const data = await updateUserDashboard(updatedData);
       setUserDashboard(data.user);
+      
+      // Réinitialiser les states d'image
+      setSelectedImage(null);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview(null);
+      }
+  
       setSuccessMessage("Vos informations ont été modifiées avec succès !");
-      // Faire disparaître le message après 5 secondes
       setTimeout(() => {
         setSuccessMessage(null);
       }, 5000);
@@ -150,6 +197,8 @@ function DashboardPage() {
       setIsLoading(false);
     }
   };
+
+  
 
   // Fonction pour modifier une commande
   const handleUpdateCommand = async (commandeId, commandeData) => {
@@ -255,6 +304,22 @@ function DashboardPage() {
     <div className={styles.dashboardPage}>
       <Header />
       <main className={styles.dashboardContainer}>
+        {/* Affichage de la photo de profil */}
+        {userDashboard?.image && (
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            <img
+              src={userDashboard.image}
+              alt="Photo de profil"
+              style={{
+                width: "120px",
+                height: "120px",
+                objectFit: "cover",
+                borderRadius: "50%",
+                border: "3px solid #d4a574",
+              }}
+            />
+          </div>
+        )}
         <h1>
           Bienvenue {userDashboard?.prenom || user?.prenom || ""}{" "}
           {userDashboard?.nom || user?.nom || ""} dans votre espace client
@@ -343,6 +408,32 @@ function DashboardPage() {
             <p className={styles.successMessage}>✓ {successMessage}</p>
           )}
           <form onSubmit={handleUpdateUser}>
+            {/* Image profile  */}
+  <div>
+  <label htmlFor="avatar">Photo de profil</label>
+  <input
+    type="file"
+    id="avatar"
+    name="avatar"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={handleImageChange}
+  />
+  {/* Afficher la preview ou l'image actuelle */}
+    {(imagePreview || userDashboard?.image) && (
+    <div style={{ marginTop: "10px" }}>
+      <img
+        src={imagePreview || userDashboard?.image}
+        alt="Photo de profil"
+        style={{
+          width: "150px",
+          height: "150px",
+          objectFit: "cover",
+          borderRadius: "50%",
+        }}
+      />
+    </div>
+      )}
+      </div>
             <div>
               <label htmlFor="prenom">Prénom</label>
               <input

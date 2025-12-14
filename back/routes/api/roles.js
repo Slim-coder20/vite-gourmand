@@ -68,8 +68,8 @@ router.post("/", authenticateToken, async (req, res) => {
       result = { insertId: roleId };
     } else {
       [result] = await pool.query("INSERT INTO role (libele) VALUES (?)", [
-        libele,
-      ]);
+      libele,
+    ]);
       roleId = result.insertId;
     }
     
