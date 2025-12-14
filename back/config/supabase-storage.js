@@ -3,16 +3,19 @@ const { createClient } = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("Variables d'environnement Supabase manquantes");
-}
+let supabase = null;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+// Initialiser le client Supabase seulement si les variables sont définies
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+} else {
+  console.warn("Variables d'environnement Supabase manquantes - upload d'images désactivé");
+}
 
 const BUCKET_NAME = "user-avatars";
 
@@ -23,6 +26,10 @@ const uploadUserAvatar = async (
   mimeType,
   originalFileName
 ) => {
+  if (!supabase) {
+    throw new Error("Supabase Storage non configuré - vérifiez les variables d'environnement");
+  }
+
   try {
     const timestamp = Date.now();
     const extension = originalFileName.split(".").pop().toLowerCase();
@@ -84,6 +91,10 @@ const uploadUserAvatar = async (
 
 // Fonction pour supprimer l'avatar d'un utilisateur
 const deleteUserAvatar = async (userId) => {
+  if (!supabase) {
+    throw new Error("Supabase Storage non configuré - vérifiez les variables d'environnement");
+  }
+
   try {
     const { data: files } = await supabase.storage.from(BUCKET_NAME).list("", {
       search: `user_${userId}_`,
