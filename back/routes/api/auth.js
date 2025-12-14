@@ -340,7 +340,23 @@ router.post("/forgot-password", async (req, res) => {
       const protocol =
         req.headers["x-forwarded-proto"] || req.protocol || "https";
       const host = req.headers.host || req.headers["x-forwarded-host"];
-      if (host) {
+
+      // Si c'est une URL de preview Vercel, utiliser l'URL de production à la place
+      // Les URLs de preview ont le format: project-name-xxx-username.vercel.app
+      // L'URL de production est: project-name.vercel.app
+      if (host && host.includes(".vercel.app")) {
+        // Extraire le nom du projet (avant le premier tiret avec hash)
+        const projectMatch = host.match(/^([^-]+)/);
+        if (projectMatch) {
+          const projectName = projectMatch[1];
+          frontendUrl = `${protocol}://${projectName}.vercel.app`;
+          console.log(
+            `⚠️ URL de preview détectée (${host}), utilisation de l'URL de production: ${frontendUrl}`
+          );
+        } else {
+          frontendUrl = `${protocol}://${host}`;
+        }
+      } else if (host) {
         frontendUrl = `${protocol}://${host}`;
       } else {
         // Fallback pour développement
