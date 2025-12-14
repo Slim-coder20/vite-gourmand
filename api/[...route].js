@@ -157,27 +157,28 @@ module.exports = async (req, res) => {
     "user-agent": req.headers["user-agent"]?.substring(0, 50),
   });
 
+  // Gérer CORS en premier, AVANT tout traitement
+  const origin = req.headers.origin || "*";
+
+  // Toujours définir les headers CORS
+  res.setHeader("Access-Control-Allow-Origin", origin === "*" ? "*" : origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+  );
+  res.setHeader("Access-Control-Max-Age", "86400"); // 24 heures
+
+  // Gérer les requêtes OPTIONS (preflight) - répondre immédiatement
+  if (req.method === "OPTIONS") {
+    return res.status(200).json({});
+  }
+
   try {
-    // Gérer CORS manuellement AVANT de modifier req.url
-    const origin = req.headers.origin;
-    if (origin) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, X-Requested-With"
-      );
-    }
-
-    // Gérer les requêtes OPTIONS (preflight)
-    if (req.method === "OPTIONS") {
-      return res.status(200).end();
-    }
-
     // Avec [...route].js, Vercel passe le chemin dans req.url
     // Pour /api/menus, req.url peut être '/menus' ou '/api/menus'
     // On doit normaliser pour avoir toujours '/api/...'
