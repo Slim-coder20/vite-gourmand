@@ -225,7 +225,8 @@ function EmployePlatsPage() {
       const platData = {
         titre_plat: createForm.titre_plat.trim(),
         photo: createForm.photo.trim() || undefined,
-        allergenes: createForm.allergenes.length > 0 ? createForm.allergenes : undefined,
+        allergenes:
+          createForm.allergenes.length > 0 ? createForm.allergenes : undefined,
       };
 
       await createPlat(platData);
@@ -335,7 +336,10 @@ function EmployePlatsPage() {
 
           {/* Modal de création */}
           {showCreateModal && (
-            <div className={styles.modalOverlay} onClick={handleCloseCreateModal}>
+            <div
+              className={styles.modalOverlay}
+              onClick={handleCloseCreateModal}
+            >
               <div
                 className={styles.modalContent}
                 onClick={(e) => e.stopPropagation()}
@@ -350,7 +354,10 @@ function EmployePlatsPage() {
                       id="create_titre_plat"
                       value={createForm.titre_plat}
                       onChange={(e) =>
-                        setCreateForm({ ...createForm, titre_plat: e.target.value })
+                        setCreateForm({
+                          ...createForm,
+                          titre_plat: e.target.value,
+                        })
                       }
                       className={styles.formInput}
                       required
