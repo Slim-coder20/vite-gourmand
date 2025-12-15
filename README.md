@@ -257,5 +257,5 @@ ISC
 
 ## 👤 Auteur
 
-Vite & Gourmand - ECF STUDI 2026
+Vite & Gourmand Slim Abida - ECF STUDI 2026
 
