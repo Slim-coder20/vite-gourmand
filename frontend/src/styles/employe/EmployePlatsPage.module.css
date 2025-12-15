@@ -58,21 +58,34 @@
   font-size: var(--font-size-2xl);
   font-weight: 600;
   color: var(--color-text);
-  margin: 0 0 1rem 0;
+  margin: 0;
   padding: 0;
   line-height: 1.4;
   display: block;
-  width: 100%;
+}
+
+/* SECTION HEADER */
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ADD BUTTON */
+.addButton {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* PLATS SECTION */
 .menusSection {
   margin-bottom: 2rem;
   padding: 1.5rem 0;
-}
-
-.menusSection .sectionTitle {
-  margin-bottom: 1.5rem;
 }
 
 /* PLATS GRID */
