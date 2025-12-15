@@ -7,6 +7,7 @@ import Footer from "../../components/footer/Footer";
 import {
   getPlat,
   getPlats,
+  createPlat,
   updatePlat,
   deletePlat,
 } from "../../services/employeService";
@@ -27,6 +28,14 @@ function EmployePlatsPage() {
   const [selectedPlat, setSelectedPlat] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({
+    titre_plat: "",
+    photo: "",
+    allergenes: [],
+  });
+
+  // Etats pour la création d'un nouveau plat //
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
     titre_plat: "",
     photo: "",
     allergenes: [],
@@ -179,6 +188,64 @@ function EmployePlatsPage() {
       console.error("Erreur:", error);
     }
   };
+
+  // Fonction pour ouvrir la modal de création //
+  const handleOpenCreateModal = () => {
+    setCreateForm({
+      titre_plat: "",
+      photo: "",
+      allergenes: [],
+    });
+    setShowCreateModal(true);
+  };
+
+  // Fonction pour fermer la modal de création //
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+    setCreateForm({
+      titre_plat: "",
+      photo: "",
+      allergenes: [],
+    });
+  };
+
+  // Fonction pour créer un nouveau plat //
+  const handleCreatePlat = async () => {
+    try {
+      setError(null);
+      setSuccessMessage(null);
+
+      // Validation : titre_plat est obligatoire
+      if (!createForm.titre_plat.trim()) {
+        setError("Le titre du plat est obligatoire");
+        return;
+      }
+
+      // Préparer les données à envoyer
+      const platData = {
+        titre_plat: createForm.titre_plat.trim(),
+        photo: createForm.photo.trim() || undefined,
+        allergenes: createForm.allergenes.length > 0 ? createForm.allergenes : undefined,
+      };
+
+      await createPlat(platData);
+      setSuccessMessage("Le plat a été créé avec succès !");
+
+      // Recharger les plats
+      await loadPlats();
+
+      // Fermer la modal
+      handleCloseCreateModal();
+
+      // Effacer le message de succès après 3 secondes
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+    } catch (error) {
+      setError(error.message || "Erreur lors de la création du plat");
+      console.error("Erreur:", error);
+    }
+  };
   if (!isAuthenticated || (user?.role_id !== 3 && user?.role_id !== 2)) {
     return null; // La redirection est gérée par useEffect
   }
@@ -200,7 +267,15 @@ function EmployePlatsPage() {
 
           {/* Section des plats */}
           <section className={styles.menusSection}>
-            <h2 className={styles.sectionTitle}>Plats ({plats.length})</h2>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Plats ({plats.length})</h2>
+              <button
+                onClick={handleOpenCreateModal}
+                className={`btn-primary ${styles.addButton}`}
+              >
+                + Ajouter un plat
+              </button>
+            </div>
 
             {plats.length === 0 ? (
               <p className={styles.emptyMessage}>
@@ -257,6 +332,109 @@ function EmployePlatsPage() {
               </div>
             )}
           </section>
+
+          {/* Modal de création */}
+          {showCreateModal && (
+            <div className={styles.modalOverlay} onClick={handleCloseCreateModal}>
+              <div
+                className={styles.modalContent}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2>Ajouter un nouveau plat</h2>
+
+                <div className={styles.modalForm}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="create_titre_plat">Titre du plat * :</label>
+                    <input
+                      type="text"
+                      id="create_titre_plat"
+                      value={createForm.titre_plat}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, titre_plat: e.target.value })
+                      }
+                      className={styles.formInput}
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="create_photo">URL de la photo :</label>
+                    <input
+                      type="text"
+                      id="create_photo"
+                      value={createForm.photo}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, photo: e.target.value })
+                      }
+                      className={styles.formInput}
+                    />
+                  </div>
+
+                  {createForm.photo && (
+                    <div className={styles.formGroup}>
+                      <label>Aperçu :</label>
+                      <img
+                        src={createForm.photo}
+                        alt={createForm.titre_plat || "Aperçu"}
+                        className={styles.imagePreview}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <div className={styles.formGroup}>
+                    <label htmlFor="create_allergenes">
+                      Allergènes (séparés par des virgules) :
+                    </label>
+                    <input
+                      type="text"
+                      id="create_allergenes"
+                      value={
+                        Array.isArray(createForm.allergenes)
+                          ? createForm.allergenes.join(", ")
+                          : createForm.allergenes || ""
+                      }
+                      onChange={(e) =>
+                        setCreateForm({
+                          ...createForm,
+                          allergenes: e.target.value
+                            .split(",")
+                            .map((a) => a.trim())
+                            .filter((a) => a !== ""),
+                        })
+                      }
+                      placeholder="Ex: Gluten, Lactose, Arachides"
+                      className={styles.formInput}
+                    />
+                    {Array.isArray(createForm.allergenes) &&
+                      createForm.allergenes.length > 0 && (
+                        <div className={styles.allergenesList}>
+                          {createForm.allergenes.map((allergene, index) => (
+                            <span key={index} className={styles.allergeneTag}>
+                              {allergene}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button
+                    onClick={handleCloseCreateModal}
+                    className="btn-outline"
+                  >
+                    Annuler
+                  </button>
+                  <button onClick={handleCreatePlat} className="btn-primary">
+                    Créer le plat
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Modal d'édition */}
           {showEditModal && selectedPlat && (

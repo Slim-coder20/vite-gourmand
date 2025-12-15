@@ -36,6 +36,13 @@ export const getPlat = async (platId) => {
   return authenticatedFetch(`${API_URL}/plats/${platId}`);
 };
 
+export const createPlat = async (data) => {
+  return authenticatedFetch(`${API_URL}/plats`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
 export const updatePlat = async (platId, data) => {
   return authenticatedFetch(`${API_URL}/plats/${platId}`, {
     method: "PUT",

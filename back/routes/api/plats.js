@@ -78,6 +78,154 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+//Route POST pour ajouter un plat (employé uniquement et admin )
+router.post("/", authenticateToken, checkEmployeeRole, async (req, res) => {
+  try {
+    const { titre_plat, photo, allergenes } = req.body;
+
+    // 1. Vérifier que le titre_plat est fourni //
+    if (!titre_plat) {
+      return res.status(400).json({
+        message: "Le titre du plat est obligatoire",
+      });
+    }
+    // 2. Vérifier qu'un plat avec le même titre
+    const [existingPlat] = await pool.query(
+      "SELECT * FROM plat WHERE titre_plat = ?",
+      [titre_plat]
+    );
+    if (existingPlat.length > 0) {
+      return res.status(409).json({
+        message: "Un plat avec ce titre existe déjà.",
+      });
+    }
+    // 3. Validation de la longueur de la photo (max 65535 caractères pour TEXT)
+    if (photo !== undefined && photo !== null && photo.length > 65535) {
+      return res.status(400).json({
+        message: "L'URL de la photo est trop longue (maximum 65535 caractères)",
+      });
+    }
+
+    // 4. Détecter si on utilise PostgreSQL
+    const isPostgreSQL =
+      process.env.DB_TYPE === "postgres" ||
+      process.env.DB_TYPE === "postgresql";
+
+    // 5. Création du nouveau plat dans la table plat
+    let result, platId;
+    if (isPostgreSQL) {
+      // PostgreSQL : utiliser RETURNING pour récupérer l'ID
+      const [insertResult] = await pool.query(
+        "INSERT INTO plat (titre_plat, photo) VALUES (?, ?) RETURNING plat_id",
+        [titre_plat, photo || null]
+      );
+      platId = pool.insertId || insertResult[0]?.plat_id;
+      result = { insertId: platId };
+    } else {
+      // MySQL : comportement normal
+      [result] = await pool.query(
+        "INSERT INTO plat (titre_plat, photo) VALUES (?, ?)",
+        [titre_plat, photo || null]
+      );
+      platId = result.insertId;
+    }
+
+    if (!platId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création du plat : ID non récupéré",
+      });
+    }
+
+    // 6. Gérer les allergènes si fournis
+    if (
+      allergenes !== undefined &&
+      Array.isArray(allergenes) &&
+      allergenes.length > 0
+    ) {
+      for (const allergeneLibelle of allergenes) {
+        // Trouver ou créer l'allergène
+        let [allergeneRows] = await pool.query(
+          "SELECT allergene_id FROM allergene WHERE libelle = ?",
+          [allergeneLibelle]
+        );
+
+        let allergeneId;
+        if (allergeneRows.length === 0) {
+          // Créer l'allergène s'il n'existe pas
+          if (isPostgreSQL) {
+            const [insertAllergeneResult] = await pool.query(
+              "INSERT INTO allergene (libelle) VALUES (?) RETURNING allergene_id",
+              [allergeneLibelle]
+            );
+            allergeneId =
+              pool.insertId || insertAllergeneResult[0]?.allergene_id;
+          } else {
+            const [insertAllergeneResult] = await pool.query(
+              "INSERT INTO allergene (libelle) VALUES (?)",
+              [allergeneLibelle]
+            );
+            allergeneId = insertAllergeneResult.insertId;
+          }
+        } else {
+          allergeneId = allergeneRows[0].allergene_id;
+        }
+
+        // Lier le plat à l'allergène
+        await pool.query(
+          "INSERT INTO plat_allergene (plat_id, allergene_id) VALUES (?, ?)",
+          [platId, allergeneId]
+        );
+      }
+    }
+
+    // 7. Récupérer le plat créé avec ses allergènes
+    const [platRows] = await pool.query(
+      `SELECT 
+        p.plat_id,
+        p.titre_plat,
+        p.photo,
+        GROUP_CONCAT(DISTINCT a.libelle ORDER BY a.libelle SEPARATOR ', ') as allergenes
+      FROM plat p
+      LEFT JOIN plat_allergene pa ON p.plat_id = pa.plat_id
+      LEFT JOIN allergene a ON pa.allergene_id = a.allergene_id
+      WHERE p.plat_id = ?
+      GROUP BY p.plat_id, p.titre_plat, p.photo`,
+      [platId]
+    );
+
+    if (platRows.length === 0) {
+      return res.status(500).json({
+        message: "Erreur lors de la récupération du plat créé",
+      });
+    }
+
+    const plat = platRows[0];
+
+    // 8. Formater les allergènes
+    const allergenesFormatted = plat.allergenes
+      ? plat.allergenes.split(", ")
+      : [];
+
+    // 9. Retourner la réponse
+    res.status(201).json({
+      message: "Plat créé avec succès",
+      plat: {
+        plat_id: plat.plat_id,
+        titre_plat: plat.titre_plat,
+        photo: plat.photo,
+        allergenes: allergenesFormatted,
+      },
+    });
+    console.log("Plat créé avec succès :", plat.titre_plat);
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la création du plat",
+      error: error.message,
+    });
+    console.error("Erreur lors de la création du plat :", error);
+  }
+});
+
 // Route PUT pour modifier un plat (employé uniquement)
 router.put("/:id", authenticateToken, checkEmployeeRole, async (req, res) => {
   try {
@@ -145,7 +293,9 @@ router.put("/:id", authenticateToken, checkEmployeeRole, async (req, res) => {
         let allergeneId;
         if (allergeneRows.length === 0) {
           // Créer l'allergène s'il n'existe pas
-          const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+          const isPostgreSQL =
+            process.env.DB_TYPE === "postgres" ||
+            process.env.DB_TYPE === "postgresql";
           if (isPostgreSQL) {
             const [insertResult] = await pool.query(
               "INSERT INTO allergene (libelle) VALUES (?) RETURNING allergene_id",
@@ -153,11 +303,11 @@ router.put("/:id", authenticateToken, checkEmployeeRole, async (req, res) => {
             );
             allergeneId = pool.insertId || insertResult[0]?.allergene_id;
           } else {
-          const [insertResult] = await pool.query(
-            "INSERT INTO allergene (libelle) VALUES (?)",
-            [allergeneLibelle]
-          );
-          allergeneId = insertResult.insertId;
+            const [insertResult] = await pool.query(
+              "INSERT INTO allergene (libelle) VALUES (?)",
+              [allergeneLibelle]
+            );
+            allergeneId = insertResult.insertId;
           }
         } else {
           allergeneId = allergeneRows[0].allergene_id;
