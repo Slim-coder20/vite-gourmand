@@ -31,7 +31,7 @@ INSERT INTO "user" ("user_id", "role_id", "actif", "email", "password", "nom", "
 INSERT INTO "user" ("user_id", "role_id", "actif", "email", "password", "nom", "prenom", "telephone", "ville", "pays", "adresse_postals") VALUES (7, 1, TRUE, 'fanny@gmail.com', '$2b$10$sjTaXCR72UitTr.dPk.aBu.KumMW5zaeyYBylCJDdVEMSG.Eucv26', 'Vallois', 'Fanny', '0607651050', 'Montrouge', 'France', '30 rue Hippolyte Mulin') ON CONFLICT DO NOTHING;
 INSERT INTO "user" ("user_id", "role_id", "actif", "email", "password", "nom", "prenom", "telephone", "ville", "pays", "adresse_postals") VALUES (8, 2, TRUE, 'jose@vitegourmand.fr', '$2b$10$i56Oya6dPAf8Lx329u2IDetoz41t/VvbUJAUj6qYuljQIOM8IlkDK', 'Fernandez', 'José', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 INSERT INTO "user" ("user_id", "role_id", "actif", "email", "password", "nom", "prenom", "telephone", "ville", "pays", "adresse_postals") VALUES (9, 1, TRUE, 'vitegourmand@gmail.com', '$2b$10$av35NVMGvAqzCCjIoxd/M.XCAELUwHOtxEgkV.QtYAo685iB3UNMK', 'Slim', 'Abida', '0607651050', 'Paris', 'France', '10 Rue Fourcade') ON CONFLICT DO NOTHING;
-
+ALTER SEQUENCE user_user_id_seq RESTART WITH 10;
 
 -- Export de la table regime
 -- 3 lignes
