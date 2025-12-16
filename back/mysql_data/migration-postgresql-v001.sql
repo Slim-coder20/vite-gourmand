@@ -27,18 +27,6 @@ CREATE TABLE IF NOT EXISTS "user" (
   FOREIGN KEY (role_id) REFERENCES role(role_id)
 );
 
--- Création de la table avis
-CREATE TABLE IF NOT EXISTS avis(
-  avis_id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL,
-  commande_id INTEGER NULL,
-  note VARCHAR(50),
-  description TEXT,
-  statut VARCHAR(50),
-  image TEXT,
-  FOREIGN KEY (user_id) REFERENCES "user"(user_id),
-  FOREIGN KEY (commande_id) REFERENCES commande(commande_id)
-);
 
 -- Création de la table allergene
 CREATE TABLE IF NOT EXISTS allergene (
@@ -117,6 +105,18 @@ CREATE TABLE IF NOT EXISTS commande (
   FOREIGN KEY (user_id) REFERENCES "user"(user_id)
 );
 
+-- Création de la table avis
+CREATE TABLE IF NOT EXISTS avis(
+  avis_id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  commande_id INTEGER NULL,
+  note VARCHAR(50),
+  description TEXT,
+  statut VARCHAR(50),
+  image TEXT,
+  FOREIGN KEY (user_id) REFERENCES "user"(user_id),
+  FOREIGN KEY (commande_id) REFERENCES commande(commande_id)
+);
 -- Création de la table commande_menu
 CREATE TABLE IF NOT EXISTS commande_menu (
   commande_id INTEGER NOT NULL,
