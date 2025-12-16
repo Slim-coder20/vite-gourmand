@@ -165,3 +165,17 @@ BEGIN
   END IF;
 END $$;
 
+-- Synchronisation des séquences PostgreSQL pour éviter les erreurs de contrainte unique
+-- Cette section garantit que les séquences sont synchronisées avec les valeurs maximales existantes
+-- après une migration ou un import de données
+
+-- Synchroniser la séquence commande_commande_id_seq
+SELECT setval('commande_commande_id_seq', COALESCE((SELECT MAX(commande_id) FROM commande), 1), true);
+
+-- Synchroniser les autres séquences importantes
+SELECT setval('"user_user_id_seq"', COALESCE((SELECT MAX(user_id) FROM "user"), 1), true);
+SELECT setval('role_role_id_seq', COALESCE((SELECT MAX(role_id) FROM role), 1), true);
+SELECT setval('menu_menu_id_seq', COALESCE((SELECT MAX(menu_id) FROM menu), 1), true);
+SELECT setval('avis_avis_id_seq', COALESCE((SELECT MAX(avis_id) FROM avis), 1), true);
+SELECT setval('commande_statut_history_history_id_seq', COALESCE((SELECT MAX(history_id) FROM commande_statut_history), 1), true);
+
