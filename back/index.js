@@ -64,7 +64,7 @@ const dashboardUserRouter = require("./routes/api/dashboardUser");
 const employeRouter = require("./routes/api/employe");
 const platsRouter = require("./routes/api/plats.js");
 const adminRouter = require("./routes/api/admin");
-
+const userRouter = require("./routes/api/user");
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
 app.use("/api/contact", contactRouter);
@@ -77,6 +77,7 @@ app.use("/api/dashboard/user", dashboardUserRouter);
 app.use("/api/employe", employeRouter);
 app.use("/api/plats", platsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/user", userRouter);
 // Route GET sur la racine "/"
 // Cette route récupère tous les utilisateurs de la base de données
 app.get("/", async (req, res) => {

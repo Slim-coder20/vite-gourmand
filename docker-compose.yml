@@ -161,6 +161,9 @@ services:
       - SMTP_PASSWORD=whhudfyrccrereze
       - SMTP_FROM=slimdev20@gmail.com
       - FRONTEND_URL=http://localhost:5173
+      # Variables d'environnement Supabase pour l'upload d'images
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
     # Commande à exécuter au démarrage du conteneur
     command: sh -c "cd /app && npm run dev"
   # Service Frontend React + Vite
