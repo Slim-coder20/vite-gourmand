@@ -96,7 +96,7 @@
   font-size: var(--font-size-base);
   font-weight: 600;
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: 25px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
@@ -112,7 +112,7 @@
 
 .buttonPrev:hover {
   background-color: var(--color-primary);
-  color: var(--color-bg-white);
+  color: white !important;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -124,6 +124,7 @@
 
 .buttonNext:hover {
   background-color: var(--color-primary);
+  color: white !important;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -138,6 +139,7 @@
 
 .buttonSubmit:hover:not(:disabled) {
   background-color: var(--color-secondary);
+  color: white !important;
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
