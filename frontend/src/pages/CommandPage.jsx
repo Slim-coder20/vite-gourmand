@@ -52,9 +52,8 @@ function CommandPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
 
-
   // useEffect 1 : Vérification authentification et pré-remplissage
- 
+
   useEffect(() => {
     // Vérifier l'authentification
     if (!isAuthenticated || !user) {
@@ -112,6 +111,14 @@ function CommandPage() {
       loadMenu();
     }
   }, [menuIdFromUrl, isAuthenticated, user]);
+
+  // ============================================
+  // useEffect 3 : Réinitialiser l'erreur globale lors du changement d'étape
+  // ============================================
+  useEffect(() => {
+    // Réinitialiser l'erreur globale quand on change d'étape
+    setError(null);
+  }, [currentStep]);
 
   // ============================================
   // FONCTIONS DE CALCUL DES PRIX
@@ -193,6 +200,7 @@ function CommandPage() {
   // ============================================
   const nextStep = () => {
     // Réinitialiser les erreurs
+    setError(null);
     setErrors({
       step1: null,
       step2: null,
@@ -291,11 +299,18 @@ function CommandPage() {
   // ============================================
   const prevStep = () => {
     // Réinitialiser les erreurs quand on revient en arrière
+    setError(null);
     setErrors({
       step1: null,
       step2: null,
       step3: null,
     });
+
+    // Si on est à l'étape 1, retourner à l'étape 3 (récapitulatif)
+    if (currentStep === 1) {
+      setCurrentStep(3);
+      return;
+    }
 
     // Vérifier qu'on n'est pas déjà à la première étape
     if (currentStep > 1) {
@@ -317,6 +332,30 @@ function CommandPage() {
     });
 
     // VALIDATION FINALE AVANT SOUMISSION
+    // Vérifier étape 3 d'abord (étape actuelle)
+    if (!formData.nombre_personne) {
+      setErrors((prev) => ({
+        ...prev,
+        step3: "Veuillez indiquer le nombre de personnes",
+      }));
+      return;
+    }
+
+    if (formData.nombre_personne < formData.menu.nombre_personne_minimum) {
+      setErrors((prev) => ({
+        ...prev,
+        step3: `Le nombre minimum de personnes est ${formData.menu.nombre_personne_minimum}`,
+      }));
+      return;
+    }
+
+    // Vérifier étape 2
+    if (!formData.menu_id || !formData.menu) {
+      setError("Veuillez sélectionner un menu");
+      setCurrentStep(2); // Retourner à l'étape 2
+      return;
+    }
+
     // Vérifier étape 1
     if (
       !formData.nom ||
@@ -329,28 +368,6 @@ function CommandPage() {
     ) {
       setError("Veuillez remplir tous les champs obligatoires de l'étape 1");
       setCurrentStep(1); // Retourner à l'étape 1
-      return;
-    }
-
-    // Vérifier étape 2
-    if (!formData.menu_id || !formData.menu) {
-      setError("Veuillez sélectionner un menu");
-      setCurrentStep(2); // Retourner à l'étape 2
-      return;
-    }
-
-    // Vérifier étape 3
-    if (!formData.nombre_personne) {
-      setError("Veuillez indiquer le nombre de personnes");
-      setCurrentStep(3); // Rester à l'étape 3
-      return;
-    }
-
-    if (formData.nombre_personne < formData.menu.nombre_personne_minimum) {
-      setError(
-        `Le nombre minimum de personnes est ${formData.menu.nombre_personne_minimum}`
-      );
-      setCurrentStep(3);
       return;
     }
 
@@ -470,15 +487,13 @@ function CommandPage() {
 
           {/* Boutons de navigation */}
           <div className={styles.navigationButtons}>
-            {currentStep > 1 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className={styles.buttonPrev}
-              >
-                ← Précédent
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={prevStep}
+              className={styles.buttonPrev}
+            >
+              ← Précédent
+            </button>
             {currentStep < 3 ? (
               <button
                 type="button"
