@@ -378,8 +378,8 @@ function CommandPage() {
       // Préparer les données pour le backend
       const commandData = {
         menu_id: formData.menu_id,
-        date_prestation: formData.date_prestation, // Format: "YYYY-MM-DD"
-        heure_livraison: formData.heure_livraison, // Format: "HH:MM"
+        date_prestation: formData.date_prestation, 
+        heure_livraison: formData.heure_livraison, 
         nombre_personne: formData.nombre_personne,
         adresse_prestation: formData.adresse_prestation,
         pret_materiel: false, // À modifier si vous ajoutez cette option
