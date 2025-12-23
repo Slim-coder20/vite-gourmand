@@ -1,6 +1,6 @@
 // Importation des modules nécessaires
 // Express : framework web pour Node.js permettant de créer des serveurs HTTP
-const express = require("express");
+const express = require("express");     
 
 // CORS : middleware pour gérer les requêtes cross-origin (permet les requêtes depuis d'autres domaines)
 const cors = require("cors");

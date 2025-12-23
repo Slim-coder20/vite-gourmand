@@ -35,29 +35,7 @@ services:
   #   restart: always
   #   # Variables d'environnement pour configurer MySQL
   #   environment:
-  #     MYSQL_ROOT_PASSWORD: root # Mot de passe pour l'utilisateur root
-  #     MYSQL_DATABASE: vite_gourmand # Création automatique de la base de données
-  #   # Mapping des ports : port_hôte:port_conteneur
-  #   # Le port 3306 (port par défaut de MySQL) est exposé sur la machine hôte
-  #   ports:
-  #     - 3306:3306
-  #   # Montage de volume pour les scripts d'initialisation
-  #   # Les fichiers SQL dans ./mysql_data seront exécutés au démarrage de la base
-  #   # IMPORTANT : Ces scripts ne s'exécutent QUE lors de la PREMIÈRE création de la base
-  #   # Si le volume MySQL est supprimé, il faut réexécuter manuellement les scripts
-  #   volumes:
-  #   #  - ./back/mysql_data:/docker-entrypoint-initdb.d
-  #     - mysql_data:/var/lib/mysql # Volume nommé pour persister les données
-  #   # Healthcheck pour vérifier que MySQL est prêt
-  #   healthcheck:
-  #     test:
-  #       ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 10
-  #     start_period: 10s
-  #Service de base de donnée MongoDB
-  # Utilliseé pour stocker les données de contact et horaires
+
   mongodb:
     image: mongo:8.0
     restart: always

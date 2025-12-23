@@ -1,5 +1,5 @@
 // Configuration de la connexion base de données
-// Ce fichier centralise la configuration et choisit automatiquement entre MySQL et PostgreSQL
+// Ce fichier centralise la configuration et choisit automatiquement PostgreSQL
 // selon la variable d'environnement DB_TYPE
 
 const dotenv = require("dotenv");
