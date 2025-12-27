@@ -69,7 +69,7 @@ if (process.env.DATABASE_URL) {
 
   // Log de la configuration SSL pour diagnostic
   if (isSupabase) {
-    console.log("🔒 SSL activé (obligatoire pour Supabase)");
+    console.log(" SSL activé (obligatoire pour Supabase)");
   }
 
   const dbUrlPreview = process.env.DATABASE_URL.replace(
@@ -77,7 +77,7 @@ if (process.env.DATABASE_URL) {
     "://***:***@"
   );
   console.log(
-    `✅ PostgreSQL configuré avec DATABASE_URL (SSL: ${
+    ` PostgreSQL configuré avec DATABASE_URL (SSL: ${
       requiresSSL ? "activé" : "désactivé"
     })`
   );
@@ -91,9 +91,9 @@ if (process.env.DATABASE_URL) {
       console.error(`   Type reçu: ${typeof process.env.DATABASE_URL}`);
     } else {
       const url = new URL(process.env.DATABASE_URL);
-      console.log(`🔍 Hostname extrait: ${url.hostname}`);
-      console.log(`🔍 Port extrait: ${url.port || "5432 (défaut)"}`);
-      console.log(`🔍 Database extraite: ${url.pathname}`);
+      console.log(`Hostname extrait: ${url.hostname}`);
+      console.log(` Port extrait: ${url.port || "5432 (défaut)"}`);
+      console.log(`Database extraite: ${url.pathname}`);
 
       // Vérifier que le hostname est complet
       if (!url.hostname.includes(".")) {

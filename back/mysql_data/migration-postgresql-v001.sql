@@ -1,4 +1,4 @@
--- Migration PostgreSQL pour Supabase
+  -- Migration PostgreSQL pour Supabase
 -- Conversion de migration-v001.sql de MySQL vers PostgreSQL
 
 -- Création de la table role

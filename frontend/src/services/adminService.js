@@ -31,6 +31,8 @@ export const getEmployes = async () => {
   return authenticatedFetch(`${API_URL}/admin/employes`);
 };
 
+
+
 // Créer un compte employé
 export const createEmploye = async (employeData) => {
   return authenticatedFetch(`${API_URL}/admin/employes`, {
