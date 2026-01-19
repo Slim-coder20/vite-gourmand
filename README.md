@@ -245,9 +245,16 @@ Puis insérez manuellement l'utilisateur dans la base de données avec `role_id 
 - Vérifiez les politiques RLS du bucket
 - Vérifiez que `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont configurés
 
+## 🎨 Maquettes et Design
+
+Les maquettes Wireframe et Mockup du projet sont disponibles dans le document suivant :
+
+📄 [Maquettes Wireframe et Mockup](./maquette-wireframe-mockup/Vite%20%26%20Gourmand%20ECF%20Maquette%20Wireframe%20et%20Mockup.pdf)
+
 ## 📚 Documentation supplémentaire
 
-- `DOCUMENTATION_DEPLOIEMENT_VERCEL_POSTGRESQL.md` : Guide de déploiement sur Vercel
+- `doc/DOCUMENTATION_DEPLOIEMENT_VERCEL_POSTGRESQL.md` : Guide de déploiement sur Vercel
+- `doc/DOCUMENTATION_SECURITE.md` : Documentation sur la sécurité du projet
 - `GUIDE_ADAPTATION_POSTGRESQL.md` : Guide d'adaptation MySQL → PostgreSQL
 - `GUIDE_CREATION_TABLES_SUPABASE.md` : Guide de création des tables
 
