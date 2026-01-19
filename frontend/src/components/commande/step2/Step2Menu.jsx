@@ -16,14 +16,14 @@ function Step2Menu ({ formData, setFormData, onMenuSelect}){
   const [isLoading, setIsLoading ] = useState(false); 
 
 
-    // Sinon, charger la liste des menus disponibles
+    
+  // Si un menu est déjà sélectionné, ne rien faire
     useEffect(() => {
-      // Si un menu est déjà sélectionné, ne rien faire
       if (formData.menu) {
         return;
       }
   
-      // Sinon, charger la liste des menus disponibles
+  // Sinon, charger la liste des menus disponibles
       const loadMenus = async () => {
         try {
           setIsLoading(true);
@@ -37,7 +37,7 @@ function Step2Menu ({ formData, setFormData, onMenuSelect}){
       };
   
       loadMenus();
-    }, [formData.menu]); 
+      }, [formData.menu]); 
 
     // Si un menu est déjà selectionné on affiche ces détails // 
     if (formData.menu) {

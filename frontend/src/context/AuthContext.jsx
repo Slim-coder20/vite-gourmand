@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []); // Tableau vide = s'exécute une seule fois au montage
 
-  // Valeur à exposer via le contexte (ÉTAPE 9 du guide)
+  
   const value = {
     // États
     user,

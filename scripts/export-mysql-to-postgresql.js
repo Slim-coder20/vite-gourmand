@@ -1,4 +1,3 @@
-// Script d'export MySQL vers PostgreSQL
 // Ce script exporte toutes les données de MySQL locale vers un fichier SQL PostgreSQL
 
 const mysql = require('mysql2/promise');
