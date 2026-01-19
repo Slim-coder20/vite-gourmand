@@ -251,13 +251,6 @@ Les maquettes Wireframe et Mockup du projet sont disponibles dans le document su
 
 📄 [Maquettes Wireframe et Mockup](./maquette-wireframe-mockup/Vite%20%26%20Gourmand%20ECF%20Maquette%20Wireframe%20et%20Mockup.pdf)
 
-## 📚 Documentation supplémentaire
-
-- `doc/DOCUMENTATION_DEPLOIEMENT_VERCEL_POSTGRESQL.md` : Guide de déploiement sur Vercel
-- `doc/DOCUMENTATION_SECURITE.md` : Documentation sur la sécurité du projet
-- `GUIDE_ADAPTATION_POSTGRESQL.md` : Guide d'adaptation MySQL → PostgreSQL
-- `GUIDE_CREATION_TABLES_SUPABASE.md` : Guide de création des tables
-
 ## 📄 Licence
 
 ISC
