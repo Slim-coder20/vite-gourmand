@@ -3,15 +3,16 @@
 // pour pouvoir l'utiliser dans toutes les routes API
 
 const { Pool } = require("pg");
+const path = require("path");
 const dotenv = require("dotenv");
-
-dotenv.config();
+// Charger le .env depuis le dossier back/
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 // Configuration du pool de connexions PostgreSQL
 // Supporte Supabase et autres services PostgreSQL cloud
 let poolConfig;
 
-// Pour Supabase, utilisez la connection string directement
+
 if (process.env.DATABASE_URL) {
   // Si DATABASE_URL est définie, utiliser uniquement connectionString
   // Les autres propriétés seront ignorées
@@ -91,12 +92,14 @@ if (process.env.DATABASE_URL) {
       console.error(`   Type reçu: ${typeof process.env.DATABASE_URL}`);
     } else {
       const url = new URL(process.env.DATABASE_URL);
+      const dbName = url.pathname ? url.pathname.replace(/^\//, "") : "";
       console.log(`Hostname extrait: ${url.hostname}`);
       console.log(` Port extrait: ${url.port || "5432 (défaut)"}`);
-      console.log(`Database extraite: ${url.pathname}`);
+      console.log(`Database extraite: ${dbName || "(défaut)"}`);
 
-      // Vérifier que le hostname est complet
-      if (!url.hostname.includes(".")) {
+      // Vérifier que le hostname Supabase n'est pas tronqué (localhost est valide)
+      const isLocalhost = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+      if (!isLocalhost && !url.hostname.includes(".")) {
         console.error("❌ ERREUR: Hostname invalide (pas de point)");
       }
       if (url.hostname.endsWith(".sup")) {

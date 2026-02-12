@@ -2,8 +2,10 @@
 // Ce fichier centralise la configuration et choisit automatiquement PostgreSQL
 // selon la variable d'environnement DB_TYPE
 
+const path = require("path");
 const dotenv = require("dotenv");
-dotenv.config();
+// Charger le .env depuis le dossier back/ (même si le serveur est lancé depuis la racine)
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 // Déterminer le type de base de données à utiliser
 const DB_TYPE = (process.env.DB_TYPE || "mysql").toLowerCase().trim(); // Normaliser la valeur

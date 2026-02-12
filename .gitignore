@@ -61,4 +61,7 @@ cleanup-docker.sh
 # Variables d'environnement (contient des informations sensibles)
 VARIABLES_ENVIRONNEMENT_VERCEL.md
 
+.env*
+
+
 

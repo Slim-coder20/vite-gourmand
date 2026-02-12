@@ -82,19 +82,22 @@ services:
       - ./back/mysql_data:/scripts
     command: >
       sh -c "
-        echo '🔍 Vérification de l''état de la base de données...' &&
-        TABLE_COUNT=$$(PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -e 'SHOW TABLES LIKE \"menu\";' | tail -n +2 | wc -l | tr -d ' ') &&
-        if [ \"$$TABLE_COUNT\" = \"0\" ]; then
-          echo '📝 Les tables n''existent pas. Initialisation de la base de données...' &&
+        echo '🔍 Vérification de la présence de la table menu...' &&
+        
+        # Note: On utilise une requête SQL SANS parenthèses pour éviter l'erreur de syntaxe shell
+        # Cette requête renvoie '1' si la table existe, et rien sinon.
+        CHECK_TABLE=\$$(PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -tAc \"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = 'menu';\") &&
+
+        if [ \"\$$CHECK_TABLE\" = \"1\" ]; then
+          echo '✅ Les tables existent déjà. Initialisation ignorée.'
+        else
+          echo '📝 Base vide détectée. Lancement des migrations...' &&
           PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -f /scripts/migration-postgresql-v001.sql &&
           PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -f /scripts/data-test-menus-postgresql.sql &&
           PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -f /scripts/data-test-avis-postgresql.sql &&
           PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -f /scripts/migration-add-image-user-postgresql.sql &&
           PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -f /scripts/migration-add-command-id-postgresql.sql &&
-          PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -f /scripts/export-postgresql-data.sql &&
           echo '✅ Base de données initialisée avec succès !'
-        else
-          echo '✅ Les tables existent déjà. Aucune initialisation nécessaire.'
         fi
       "
 

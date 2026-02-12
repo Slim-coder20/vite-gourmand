@@ -10,9 +10,10 @@ const mongoose = require("mongoose");
 
 // dotenv : module pour charger les variables d'environnement depuis un fichier .env
 const dotenv = require("dotenv");
+const path = require("path");
 
-// Configuration de dotenv pour charger les variables d'environnement
-dotenv.config();
+// Charger le .env depuis le dossier back/ (évite les erreurs si on lance depuis la racine du projet)
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 // Création de l'application Express
 const app = express();

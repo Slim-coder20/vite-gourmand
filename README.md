@@ -127,6 +127,24 @@ node scripts/generate-jwt-secret.js
 
 ### Développement
 
+**Important :** En local, MongoDB doit être démarré pour que l’API fonctionne (horaires, contact, etc.). Sinon le backend affiche une erreur de connexion et les routes `/api/horaires`, `/api/avis`, `/api/menus` peuvent échouer.
+
+#### 0. Démarrer MongoDB (recommandé en local)
+
+Avec Docker (depuis la racine du projet) :
+
+```bash
+docker-compose up -d mongodb
+```
+
+Sans Docker : installez et lancez MongoDB en local, puis utilisez dans votre `.env` :
+
+```env
+MONGODB_URI=mongodb://root:root@localhost:27017/vite_gourmand?authSource=admin
+```
+
+(ou l’URL correspondant à votre installation MongoDB.)
+
 #### 1. Lancer le backend
 
 ```bash
@@ -233,6 +251,13 @@ Puis insérez manuellement l'utilisateur dans la base de données avec `role_id 
 - Vérifiez que `DATABASE_URL` est correctement configurée
 - Vérifiez que `DB_TYPE` correspond à votre base de données
 - Pour Supabase, utilisez le Session Pooler (port 5432)
+
+### Erreur de connexion à MongoDB (`ECONNREFUSED 127.0.0.1:27017`)
+
+- Le backend a besoin de MongoDB pour les horaires, contacts et statistiques.
+- **Avec Docker :** à la racine du projet, lancez `docker-compose up -d mongodb`.
+- **Sans Docker :** installez MongoDB et démarrez le service, puis définissez `MONGODB_URI` dans votre `.env` (le back charge le `.env` à la racine du projet).
+- Après avoir démarré MongoDB, relancez le backend (`npm run dev` dans `back/`).
 
 ### Erreur CORS
 
