@@ -21,6 +21,9 @@ import EmployeHorairesPage from "./pages/employer/EmployeHorairesPage";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import AdminStatistiquesPage from "./pages/admin/AdminStatistiquesPage";
 import AdminEmployesPage from "./pages/admin/AdminEmployesPage";
+import Confidentialite from "./pages/Confidentialite";
+import MentionsLegales from "./pages/MentionsLegales";
+
 
 function App() {
   return (
@@ -36,6 +39,10 @@ function App() {
         <Route path="/team" element={<Team />} />
         <Route path="/menu/:id" element={<MenuDetailPage />} />
         <Route path="/commande/:menu_id?" element={<CommandPage />} />
+        <Route path="/confidentialite" element={<Confidentialite/>}
+        />
+        <Route path="/mentions-legales" element={<MentionsLegales/>}
+        />
 
         {/* Routes protégées pour les clients */}
         <Route

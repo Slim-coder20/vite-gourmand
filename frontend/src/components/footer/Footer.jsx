@@ -2,6 +2,7 @@ import "../../index.css";
 import styles from "./Footer.module.css";
 import { useState, useEffect } from "react";
 import { getPublicHoraires } from "../../services/horairesService.js";
+import { Link } from "react-router-dom";
 
 function Footer() {
   // Gestion des états pour les horaires //
@@ -122,15 +123,15 @@ function Footer() {
         {/* Colonne droite - Liens légaux */}
         <div className={styles.footerColumn}>
           <div className={styles.footerLinks}>
-            <a href="#mentions-legales" className={styles.footerLink}>
+            <Link to="/mentions-legales" className={styles.footerLink}>
               Mentions légales
-            </a>
-            <a
-              href="#politique-de-confidentialite"
+            </Link>
+            <Link
+              to="/confidentialite"
               className={styles.footerLink}
             >
               Politique de confidentialité
-            </a>
+            </Link>
             <a href="/contact" className={styles.footerLink}>
               Contact
             </a>
