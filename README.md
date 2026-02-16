@@ -4,14 +4,22 @@ Application web full-stack permettant aux clients de commander des repas en lign
 
 ## 📋 Prérequis
 
-Avant de commencer, assurez-vous d'avoir installé les éléments suivants :
-
 - **Node.js** (version 18.x ou supérieure)
-- **npm** (généralement inclus avec Node.js)
+- **npm** (inclus avec Node.js)
 - **Git**
-- **Base de données PostgreSQL** (Supabase recommandé) ou MySQL
-- **MongoDB** (pour les messages de contact et les horaires)
-- Un compte **Supabase** (pour le stockage des images de profil)
+- **PostgreSQL** : en production, base hébergée sur **Supabase**
+- **MongoDB** : formulaire de contact, horaires d’ouverture, statistiques côté admin
+- **Supabase** : base de données (PostgreSQL) + **Supabase Storage** pour l’upload des images (avatars, etc.)
+
+## 🗄️ Stack technique et données
+
+| Usage | Technologie |
+|--------|-------------|
+| **Production (données métier)** | **Supabase** (PostgreSQL) — utilisateurs, rôles, menus, plats, avis, commandes |
+| **Contact, horaires, stats admin** | **MongoDB** (Mongoose) — messages de contact, horaires, statistiques de commandes |
+| **Upload d’images** | **Supabase Storage** — avatars utilisateurs, images plats/menus |
+
+MySQL n’est pas utilisé : le projet est en **PostgreSQL (Supabase)** en prod.
 
 ## 🚀 Installation
 
@@ -24,159 +32,115 @@ cd vite_gourmand
 
 ### 2. Installer les dépendances
 
-#### À la racine du projet
-```bash
-npm install
-```
+À la racine, dans `back/` et dans `frontend/` :
 
-#### Dans le dossier `back/`
 ```bash
-cd back
 npm install
-cd ..
-```
-
-#### Dans le dossier `frontend/`
-```bash
-cd frontend
-npm install
-cd ..
+cd back && npm install && cd ..
+cd frontend && npm install && cd ..
 ```
 
 ## ⚙️ Configuration
 
-### Variables d'environnement
+### Variables d’environnement
 
-Créez un fichier `.env` à la racine du projet avec les variables suivantes :
+Fichier `.env` à la racine (et/ou `back/.env`, `frontend/.env` selon le mode de lancement). Exemple :
 
 ```env
-# Type de base de données (postgres ou mysql)
+# Base de données principale (Supabase)
 DB_TYPE=postgres
-
-# URL de connexion PostgreSQL (Supabase)
 DATABASE_URL=postgresql://user:password@host:port/database
 
-# URL de connexion MongoDB
-MONGODB_URI=mongodb://localhost:27017/vite_gourmand
+# MongoDB (contact, horaires, statistiques admin)
+MONGODB_URI=mongodb://root:root@localhost:27017/vite_gourmand?authSource=admin
 
-# JWT Secret (générez une clé secrète)
+# JWT
 JWT_SECRET=votre_cle_secrete_jwt
 
-# Configuration email (Nodemailer)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=votre_email@gmail.com
-EMAIL_PASS=votre_mot_de_passe_application
-
-# URL du frontend
+# Frontend (liens emails, etc.)
 FRONTEND_URL=http://localhost:5173
 
-# Configuration Supabase (pour le stockage des images)
+# SMTP (emails)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=votre_email@gmail.com
+SMTP_PASSWORD=mot_de_passe_application
+SMTP_FROM=votre_email@gmail.com
+
+# Supabase Storage (upload d’images)
 SUPABASE_URL=https://votre-projet.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=votre_cle_service_role
 
-# URL de l'API (pour le frontend)
+# Frontend : URL de l’API
 VITE_API_URL=http://localhost:3000/api
 ```
 
-**Note :** Pour le frontend, créez également un fichier `.env` dans le dossier `frontend/` :
-
-```env
-VITE_API_URL=http://localhost:3000/api
-```
-
-### Génération d'une clé JWT secrète
-
-Vous pouvez générer une clé JWT secrète en utilisant le script fourni :
+Génération d’une clé JWT :
 
 ```bash
 node scripts/generate-jwt-secret.js
 ```
 
-## 🗄️ Base de données
+### Base de données PostgreSQL (Supabase)
 
-### Option 1 : PostgreSQL (Supabase) - Recommandé
-
-1. Créez un projet sur [Supabase](https://supabase.com)
-2. Récupérez votre `DATABASE_URL` depuis les paramètres du projet
-3. Exécutez les scripts de migration dans l'ordre :
-   ```bash
-   # Création des tables
-   psql $DATABASE_URL -f back/mysql_data/migration-postgresql-v001.sql
-   
-   # Correction des séquences (si import depuis MySQL)
-   psql $DATABASE_URL -f back/mysql_data/fix-postgresql-sequences.sql
-   ```
-
-### Option 2 : MySQL
-
-1. Créez une base de données MySQL
-2. Exécutez les scripts de migration :
-   ```bash
-   mysql -u user -p database_name < back/mysql_data/migration-v001.sql
-   ```
-
-### Configuration Supabase Storage
-
-1. Dans votre projet Supabase, créez un bucket nommé `user-avatars`
-2. Configurez les politiques RLS :
-   - **INSERT** : Authenticated users uniquement
-   - **SELECT** : Public (pour afficher les images)
-
-## 🏃 Lancement de l'application
-
-### Développement
-
-**Important :** En local, MongoDB doit être démarré pour que l’API fonctionne (horaires, contact, etc.). Sinon le backend affiche une erreur de connexion et les routes `/api/horaires`, `/api/avis`, `/api/menus` peuvent échouer.
-
-#### 0. Démarrer MongoDB (recommandé en local)
-
-Avec Docker (depuis la racine du projet) :
+1. Créer un projet sur [Supabase](https://supabase.com).
+2. Récupérer `DATABASE_URL` dans les paramètres du projet.
+3. Exécuter les migrations (depuis la racine) :
 
 ```bash
-docker-compose up -d mongodb
+psql "$DATABASE_URL" -f back/mysql_data/migration-postgresql-v001.sql
+psql "$DATABASE_URL" -f back/mysql_data/fix-postgresql-sequences.sql
 ```
 
-Sans Docker : installez et lancez MongoDB en local, puis utilisez dans votre `.env` :
+### Supabase Storage (images)
 
-```env
-MONGODB_URI=mongodb://root:root@localhost:27017/vite_gourmand?authSource=admin
-```
+1. Dans le projet Supabase, créer un bucket `user-avatars` (ou selon votre code).
+2. Configurer les politiques RLS (INSERT pour utilisateurs authentifiés, SELECT public si besoin).
 
-(ou l’URL correspondant à votre installation MongoDB.)
+## 🐳 Conteneurisation (Docker)
 
-#### 1. Lancer le backend
+Le projet est entièrement conteneurisable : frontend, backend et services (PostgreSQL, MongoDB) sont décrits dans `docker-compose.yml`.
+
+### Services définis dans `docker-compose.yml`
+
+| Service | Rôle | Port(s) |
+|--------|------|--------|
+| **db** | PostgreSQL (données métier) | 5432 |
+| **mongodb** | MongoDB (contact, horaires, stats) | 27017 |
+| **db-init** | Initialisation des tables Postgres (migrations) | — |
+| **adminer** | Interface web de gestion PostgreSQL | 8080 |
+| **mongo-express** | Interface web de gestion MongoDB | 8081 |
+| **server** | Backend Express (API) | 3000 |
+| **frontend** | Application React (Vite) | 5173 |
+
+### Lancer l’application avec Docker
+
+À la racine du projet :
 
 ```bash
-cd back
-npm run dev
+docker-compose up -d
 ```
 
-Le backend sera accessible sur `http://localhost:3000`
+- **Frontend** : http://localhost:5173  
+- **API** : http://localhost:3000  
+- **Adminer** (PostgreSQL) : http://localhost:8080  
+- **Mongo Express** : http://localhost:8081  
 
-#### 2. Lancer le frontend (dans un autre terminal)
+Le service **server** dépend de `db`, `mongodb` et `db-init`. Le **frontend** dépend du **server**. Les variables d’environnement (Supabase, JWT, SMTP, etc.) sont définies dans `docker-compose.yml` pour les conteneurs ; en local sans Docker, utilisez les fichiers `.env` (racine, `back/`, `frontend/`).
+
+### Lancer uniquement les bases (dev local back + front sur la machine)
 
 ```bash
-cd frontend
-npm run dev
+docker-compose up -d db mongodb
+# puis : cd back && npm run dev  et  cd frontend && npm run dev
 ```
 
-Le frontend sera accessible sur `http://localhost:5173`
+## 🏃 Lancement sans Docker (développement)
 
-### Production locale
-
-#### Backend
-```bash
-cd back
-node index.js
-```
-
-#### Frontend
-```bash
-cd frontend
-npm run build
-npm run preview
-```
+1. Démarrer PostgreSQL (Supabase ou local) et MongoDB (ex. `docker-compose up -d mongodb` si seulement MongoDB en Docker).
+2. Configurer les `.env` (voir ci-dessus).
+3. Backend : `cd back && npm run dev` → http://localhost:3000  
+4. Frontend : `cd frontend && npm run dev` → http://localhost:5173  
 
 ## 📁 Structure du projet
 
@@ -184,103 +148,110 @@ npm run preview
 vite_gourmand/
 ├── api/                    # Routes API Vercel (serverless)
 ├── back/                   # Backend Express.js
-│   ├── config/            # Configuration (DB, email, etc.)
-│   ├── middleware/        # Middlewares (auth, roles)
-│   ├── models/            # Modèles Mongoose
-│   ├── routes/            # Routes API
-│   └── mysql_data/        # Scripts SQL de migration
-├── frontend/              # Frontend React + Vite
-│   ├── public/            # Fichiers statiques
+│   ├── config/             # Configuration (DB, email, Supabase, etc.)
+│   ├── middleware/         # Auth, rôles
+│   ├── models/             # Modèles Mongoose (Contact, Horaire, etc.)
+│   ├── routes/             # Routes API
+│   └── mysql_data/         # Scripts SQL (migrations PostgreSQL)
+├── frontend/                # Frontend React + Vite
+│   ├── public/
 │   └── src/
-│       ├── components/    # Composants React
-│       ├── pages/         # Pages de l'application
-│       ├── services/      # Services API
-│       └── styles/        # Styles CSS
-├── scripts/               # Scripts utilitaires
-└── vercel.json           # Configuration Vercel
+│       ├── components/
+│       ├── pages/
+│       ├── services/
+│       └── styles/
+├── Diagralmme BD/          # Diagrammes (MCD, MLD, MPD, cas d’utilisation, séquence)
+├── scripts/
+└── vercel.json
 ```
 
 ## 🛠️ Technologies utilisées
 
 ### Backend
+
 - **Node.js** + **Express.js**
-- **PostgreSQL** (Supabase) / **MySQL**
-- **MongoDB** (Mongoose)
-- **JWT** pour l'authentification
-- **bcrypt** pour le hachage des mots de passe
-- **Nodemailer** pour l'envoi d'emails
-- **Multer** pour l'upload de fichiers
-- **Supabase Storage** pour le stockage des images
+- **PostgreSQL** (Supabase) — données métier
+- **MongoDB** (Mongoose) — contact, horaires, statistiques admin
+- **JWT** (authentification), **bcrypt** (mots de passe)
+- **Nodemailer** (emails), **Multer** (fichiers)
+- **Supabase Storage** (upload d’images)
 
 ### Frontend
-- **React 19**
-- **Vite**
-- **React Router** pour la navigation
-- **CSS Modules** pour le styling
 
-## 👥 Rôles utilisateurs
+- **React 19**, **Vite**, **React Router**
+- **CSS Modules**, charte graphique (variables CSS)
 
-L'application dispose de trois types d'utilisateurs :
+## 👥 Rôles
 
-1. **Client** (`role_id: 1`) : Peut commander des repas, gérer son profil
-2. **Admin** (`role_id: 2`) : Accès complet à l'administration
-3. **Employé** (`role_id: 3`) : Gestion des commandes, avis, plats, menus
+1. **Client** (`role_id: 1`) : commandes, profil  
+2. **Admin** (`role_id: 2`) : administration complète, statistiques  
+3. **Employé** (`role_id: 3`) : commandes, avis, plats, menus, horaires  
 
-## 🔐 Création d'un compte administrateur
-
-Pour créer un compte administrateur, utilisez le script fourni :
+## 🔐 Compte administrateur
 
 ```bash
 cd back
 node create-admin-hash.js
 ```
 
-Puis insérez manuellement l'utilisateur dans la base de données avec `role_id = 2`.
+Puis créer l’utilisateur en base avec `role_id = 2`.
 
-## 📝 Scripts disponibles
+## 📝 Scripts
 
-- `npm run build` : Build du frontend
-- `npm run export-mysql` : Export des données MySQL vers PostgreSQL
-- `cd back && npm run dev` : Lancement du backend en mode développement
-- `cd frontend && npm run dev` : Lancement du frontend en mode développement
+- `npm run build` : build du frontend  
+- `npm run export-mysql` : export MySQL → PostgreSQL (migration)  
+- `cd back && npm run dev` : backend en dev  
+- `cd frontend && npm run dev` : frontend en dev  
+
+## 📐 Diagrammes
+
+Les diagrammes du projet sont dans le dossier **`Diagralmme BD/`** :
+
+| Document | Fichier | Description |
+|----------|---------|-------------|
+| **Modèle physique des données (MPD)** | [MPD.jpeg](./Diagralmme%20BD/MPD.jpeg) | Schéma physique des tables (PostgreSQL) |
+| **Modèle logique des données (MLD)** | [Diagramme MLD.jpeg](./Diagralmme%20BD/Diagramme%20MLD.jpeg) | Relations et structure logique |
+| **Modèle conceptuel des données (MCD)** | [Diagramme MCD.jpeg](./Diagralmme%20BD/Diagramme%20MCD.jpeg) | Entités et associations |
+| **Cas d’utilisation** | [Diagramme _cas_d'utilisation.jpeg](./Diagralmme%20BD/Diagramme%20_cas_d%27utilisation.jpeg) | Acteurs et cas d’usage |
+
+### Flux de création d’une commande (diagramme de séquence)
+
+Le flux ci-dessous résume les échanges entre client, frontend, API et bases lors de la création d’une commande.
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Frontend
+  participant API
+  participant PostgreSQL
+  participant MongoDB
+
+  Client->>Frontend: Choisit menu / plats, valide panier
+  Frontend->>API: POST /api/commandes (JWT)
+  API->>API: Vérification JWT + rôle
+  API->>PostgreSQL: INSERT commande, lignes
+  PostgreSQL-->>API: OK
+  API->>MongoDB: Stats / historique si utilisé
+  MongoDB-->>API: OK
+  API-->>Frontend: 201 + commande
+  Frontend-->>Client: Confirmation, redirection
+```
+
+Un diagramme de séquence détaillé (image) peut être ajouté dans `Diagralmme BD/` (ex. `Diagramme sequence commande.jpeg`).
 
 ## 🐛 Dépannage
 
-### Erreur de connexion à la base de données
+- **Connexion PostgreSQL** : vérifier `DATABASE_URL` et `DB_TYPE=postgres` (Supabase, port 5432).  
+- **Connexion MongoDB** : `ECONNREFUSED 127.0.0.1:27017` → lancer MongoDB (ex. `docker-compose up -d mongodb`) et définir `MONGODB_URI` dans `.env`.  
+- **CORS** : vérifier `FRONTEND_URL` et la config CORS de l’API (Vercel ou back).  
+- **Images** : vérifier le bucket Supabase, RLS, `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY`.  
 
-- Vérifiez que `DATABASE_URL` est correctement configurée
-- Vérifiez que `DB_TYPE` correspond à votre base de données
-- Pour Supabase, utilisez le Session Pooler (port 5432)
+## 🎨 Maquettes
 
-### Erreur de connexion à MongoDB (`ECONNREFUSED 127.0.0.1:27017`)
-
-- Le backend a besoin de MongoDB pour les horaires, contacts et statistiques.
-- **Avec Docker :** à la racine du projet, lancez `docker-compose up -d mongodb`.
-- **Sans Docker :** installez MongoDB et démarrez le service, puis définissez `MONGODB_URI` dans votre `.env` (le back charge le `.env` à la racine du projet).
-- Après avoir démarré MongoDB, relancez le backend (`npm run dev` dans `back/`).
-
-### Erreur CORS
-
-- Assurez-vous que `FRONTEND_URL` correspond à l'URL du frontend
-- Vérifiez la configuration CORS dans `api/[...route].js`
-
-### Images non affichées
-
-- Vérifiez que le bucket Supabase `user-avatars` existe
-- Vérifiez les politiques RLS du bucket
-- Vérifiez que `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont configurés
-
-## 🎨 Maquettes et Design
-
-Les maquettes Wireframe et Mockup du projet sont disponibles dans le document suivant :
-
-📄 [Maquettes Wireframe et Mockup](./maquette-wireframe-mockup/Vite%20%26%20Gourmand%20ECF%20Maquette%20Wireframe%20et%20Mockup.pdf)
+[Maquettes Wireframe et Mockup](./maquette-wireframe-mockup/Vite%20%26%20Gourmand%20ECF%20Maquette%20Wireframe%20et%20Mockup.pdf)
 
 ## 📄 Licence
 
-ISC
+ISC  
 
-## 👤 Auteur
-
-Vite & Gourmand Slim Abida - ECF STUDI 2026
-
+**Vite & Gourmand** – Slim Abida – ECF STUDI 2026

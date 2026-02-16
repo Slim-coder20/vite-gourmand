@@ -28,13 +28,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # db:
-  #   # Image Docker MySQL version 8.0 (plus stable que 9.5.0 pour Docker)
-  #   image: mysql:8.0
-  #   # Redémarrage automatique du conteneur en cas d'arrêt
-  #   restart: always
-  #   # Variables d'environnement pour configurer MySQL
-  #   environment:
+
 
   mongodb:
     image: mongo:8.0
