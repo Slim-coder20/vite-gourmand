@@ -78,9 +78,8 @@ services:
       sh -c "
         echo '🔍 Vérification de la présence de la table menu...' &&
         
-        # Note: On utilise une requête SQL SANS parenthèses pour éviter l'erreur de syntaxe shell
-        # Cette requête renvoie '1' si la table existe, et rien sinon.
-        CHECK_TABLE=\$$(PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -tAc \"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = 'menu';\") &&
+        # Requête renvoie '1' si la table existe. On enlève retours à la ligne pour que la comparaison soit fiable.
+        CHECK_TABLE=\$$(PGPASSWORD=root psql -h db -d vite_gourmand -U postgres -tAc \"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = 'menu';\" | tr -d '\\n\\r') &&
 
         if [ \"\$$CHECK_TABLE\" = \"1\" ]; then
           echo '✅ Les tables existent déjà. Initialisation ignorée.'
