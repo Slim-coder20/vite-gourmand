@@ -214,31 +214,6 @@ Les diagrammes du projet sont dans le dossier **`Diagralmme BD/`** :
 | **Modèle conceptuel des données (MCD)** | [Diagramme MCD.jpeg](./Diagralmme%20BD/Diagramme%20MCD.jpeg) | Entités et associations |
 | **Cas d’utilisation** | [Diagramme _cas_d'utilisation.jpeg](./Diagralmme%20BD/Diagramme%20_cas_d%27utilisation.jpeg) | Acteurs et cas d’usage |
 
-### Flux de création d’une commande (diagramme de séquence)
-
-Le flux ci-dessous résume les échanges entre client, frontend, API et bases lors de la création d’une commande.
-
-```mermaid
-sequenceDiagram
-  participant Client
-  participant Frontend
-  participant API
-  participant PostgreSQL
-  participant MongoDB
-
-  Client->>Frontend: Choisit menu / plats, valide panier
-  Frontend->>API: POST /api/commandes (JWT)
-  API->>API: Vérification JWT + rôle
-  API->>PostgreSQL: INSERT commande, lignes
-  PostgreSQL-->>API: OK
-  API->>MongoDB: Stats / historique si utilisé
-  MongoDB-->>API: OK
-  API-->>Frontend: 201 + commande
-  Frontend-->>Client: Confirmation, redirection
-```
-
-Un diagramme de séquence détaillé (image) peut être ajouté dans `Diagralmme BD/` (ex. `Diagramme sequence commande.jpeg`).
-
 ## 🐛 Dépannage
 
 - **Connexion PostgreSQL** : vérifier `DATABASE_URL` et `DB_TYPE=postgres` (Supabase, port 5432).  
