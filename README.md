@@ -213,6 +213,7 @@ Les diagrammes du projet sont dans le dossier **`Diagralmme BD/`** :
 | **Modèle logique des données (MLD)** | [Diagramme MLD.jpeg](./Diagralmme%20BD/Diagramme%20MLD.jpeg) | Relations et structure logique |
 | **Modèle conceptuel des données (MCD)** | [Diagramme MCD.jpeg](./Diagralmme%20BD/Diagramme%20MCD.jpeg) | Entités et associations |
 | **Cas d’utilisation** | [Diagramme _cas_d'utilisation.jpeg](./Diagralmme%20BD/Diagramme%20_cas_d%27utilisation.jpeg) | Acteurs et cas d’usage |
+| **Diagramme de séquence (gestion de commande)** | [Diagramme sequence commande.jpeg](./Diagralmme%20BD/Diagramme%20sequence%20commande.jpeg) | Flux User → Front → Commande service → Back → BD (validation et création de commande) |
 
 ## 🐛 Dépannage
 
