@@ -226,6 +226,12 @@ Les diagrammes du projet sont dans le dossier **`Diagralmme BD/`** :
 
 [Maquettes Wireframe et Mockup](./maquette-wireframe-mockup/Vite%20%26%20Gourmand%20ECF%20Maquette%20Wireframe%20et%20Mockup.pdf)
 
+## 🚀 Déploiement (Vercel)
+
+Le processus de déploiement (architecture serverless, configuration Vercel, variables d’environnement, tests post-déploiement) est décrit dans le document suivant :
+
+📄 [Déploiement Vite & Gourmand](./D%C3%A9ploiement%20Vite%20%26%20Gourmand%20(1).pdf)
+
 ## 📄 Licence
 
 ISC  
