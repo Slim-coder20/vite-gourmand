@@ -130,6 +130,7 @@ const createNewCommande = async (req, res) => {
       heure_livraison,
       nombre_personne,
       adresse_prestation,
+      pret_materiel = false,
       restitution_materiel = false,
     } = req.body;
     //3. Vérification que tous les champs requis sont présents //
