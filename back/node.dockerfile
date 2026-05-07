@@ -1,23 +1,23 @@
-# Image de base : Node.js version 22 sur Alpine Linux
-# Alpine est une distribution Linux légère, idéale pour les conteneurs Docker
-FROM node:22-alpine
+  # Image de base : Node.js version 22 sur Alpine Linux
+  # Alpine est une distribution Linux légère, idéale pour les conteneurs Docker
+  FROM node:22-alpine
 
-# Définition du répertoire de travail
-WORKDIR /app
+  # Définition du répertoire de travail
+  WORKDIR /app
 
-# Configuration de la variable d'environnement PATH
-# Ajoute le répertoire des binaires npm au PATH pour pouvoir exécuter les commandes npm globales
-ENV PATH /node_modules/.bin:$PATH
+  # Configuration de la variable d'environnement PATH
+  # Ajoute le répertoire des binaires npm au PATH pour pouvoir exécuter les commandes npm globales
+  ENV PATH /node_modules/.bin:$PATH
 
-# Installation des dépendances de l'application
-# Copie des fichiers de dépendances dans le conteneur
-COPY ./package.json ./
-COPY ./package-lock.json ./
+  # Installation des dépendances de l'application
+  # Copie des fichiers de dépendances dans le conteneur
+  COPY ./package.json ./
+  COPY ./package-lock.json ./
 
-# Installation de toutes les dépendances listées dans package.json
-# Cette étape est mise en cache par Docker si package.json n'a pas changé
-RUN npm install
+  # Installation de toutes les dépendances listées dans package.json
+  # Cette étape est mise en cache par Docker si package.json n'a pas changé
+  RUN npm install
 
-# Exposition du port 3000
-# Indique que le conteneur écoute sur le port 3000 (nécessaire pour le mapping dans docker-compose)
-EXPOSE 3000
+  # Exposition du port 3000
+  # Indique que le conteneur écoute sur le port 3000 (nécessaire pour le mapping dans docker-compose)
+  EXPOSE 3000

@@ -49,10 +49,9 @@ mongoose
   });
 
 // Importation des modèles Mongoose
-const Horaire = require("./models/Horaire");
-const Contact = require("./models/Contact");
-const StatistiqueCommande = require("./models/StatistiqueCommande");
-
+const Horaire = require("./models/mongodb/Horaire");
+const Contact = require("./models/mongodb/Contact");
+const StatistiqueCommande = require("./models/mongodb/StatistiqueCommande");
 // Importation des routes API
 const horairesRouter = require("./routes/api/horaires");
 const contactRouter = require("./routes/api/contact");
@@ -66,6 +65,8 @@ const employeRouter = require("./routes/api/employe");
 const platsRouter = require("./routes/api/plats.js");
 const adminRouter = require("./routes/api/admin");
 const userRouter = require("./routes/api/user");
+
+
 // Utilisation des routes API
 app.use("/api/horaires", horairesRouter);
 app.use("/api/contact", contactRouter);

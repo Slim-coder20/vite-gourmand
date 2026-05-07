@@ -15,17 +15,24 @@ function ProtectedRoute({ children, requiredRoleId = null }) {
 
   // Fonction pour vérifier si le rôle de l'utilisateur est autorisé
   const isRoleAuthorized = (userRoleId) => {
+    const roleNum =
+      userRoleId != null && userRoleId !== ""
+        ? Number(userRoleId)
+        : NaN;
+    if (Number.isNaN(roleNum)) {
+      return false;
+    }
     if (requiredRoleId === null) {
       return true; // Pas de restriction de rôle
     }
 
     // Si c'est un tableau de rôles
     if (Array.isArray(requiredRoleId)) {
-      return requiredRoleId.includes(userRoleId);
+      return requiredRoleId.includes(roleNum);
     }
 
     // Si c'est un seul rôle
-    return userRoleId === requiredRoleId;
+    return roleNum === requiredRoleId;
   };
 
   useEffect(() => {

@@ -50,7 +50,21 @@ export const authenticatedFetch = async (url, options = {}) => {
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-// Fonction pour enregistrer un nouvel utilisateur //
+/** Normalise user_id / role_id en nombres (réponses PostgreSQL / JSON). */
+export function normalizeAuthUser(user) {
+  if (!user) return null;
+  const uid = user.user_id;
+  const rid = user.role_id;
+  return {
+    ...user,
+    user_id: uid != null && uid !== "" ? Number(uid) : uid,
+    role_id: rid != null && rid !== "" ? Number(rid) : rid,
+  };
+}
+
+export const fetchCurrentUser = async () => {
+  return authenticatedFetch(`${API_URL}/auth/me`);
+};
 export const register = async (userData) => {
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
@@ -79,7 +93,7 @@ export const register = async (userData) => {
     }
 
     // Retourne un token JWT et les informations de l'utilisateur //
-    return data;
+    return { ...data, user: normalizeAuthUser(data.user) };
   } catch (error) {
     throw new Error(error.message || "Erreur lors de l'inscription");
   }
@@ -108,7 +122,7 @@ export const login = async (userData) => {
     }
 
     // Retourne un token JWT et les informations de l'utilisateur //
-    return data;
+    return { ...data, user: normalizeAuthUser(data.user) };
   } catch (error) {
     throw new Error(error.message || "Erreur lors de la connexion");
   }

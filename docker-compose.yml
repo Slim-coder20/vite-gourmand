@@ -2,8 +2,8 @@
 # Ce fichier définit les services suivants :
 # - Base de données Postrges (pour les données principales)
 # - Base de données MongoDB (pour Contact et horaires)
-# - Adminer (interface web pour Postrgres)
-# - Mongo Express (interface web pour MongoDB)
+# - Adminer (interface web pour Postrgres en dev)
+# - Mongo Express (interface web pour MongoDB en dev)
 # - Serveur Node.js (API Express)
 # - Frontend React + Vite
 
@@ -41,7 +41,7 @@ services:
       - 27017:27017
     volumes:
       - mongodb_data:/data/db
-  # Service Adminer : interface web pour gérer la base de données MySQL
+  # Service Adminer : interface web pour gérer la base de données PostgreSQL
   adminer:
     # Image Docker Adminer (outil de gestion de bases de données)
     image: adminer
@@ -50,7 +50,7 @@ services:
     # Exposition du port 8080 pour accéder à l'interface web
     ports:
       - 8080:8080
-  # Service Mongo Express : intreface web pour gérer mongodb
+  # Service Mongo Express : intreface web pour gérer MongoDB
   mongo-express:
     image: mongo-express:latest
     restart: always
@@ -64,7 +64,7 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: admin
     depends_on:
       - mongodb
-  # Conteneur d'initialisation de la base de données
+  # Conteneur d'initialisation de la base de données PostgreSQL
   # S'exécute une seule fois pour vérifier et initialiser la base si nécessaire
   db-init:
     image: postgres:17-alpine

@@ -1,0 +1,445 @@
+const pool = require("../config/database");
+
+// Fonction pour la création d'un avis // 
+const createAvis = async (req, res) => {
+  try {
+    const { note, description, statut } = req.body;
+
+    // Vérification que tous les champs sont requis
+    if (!note || !description || !statut) {
+      return res.status(400).json({
+        message: "Tous les champs sont requis (note, description, statut)",
+      });
+    }
+
+    // Vérification que la note est comprise entre 1 et 5
+    const noteNum = parseInt(note);
+    if (isNaN(noteNum) || noteNum < 1 || noteNum > 5) {
+      return res.status(400).json({
+        message: "La note doit être un nombre compris entre 1 et 5",
+      });
+    }
+
+    // Vérification que le statut est valide (validée ou non validée)
+    if (statut !== "validée" && statut !== "non validée") {
+      return res.status(400).json({
+        message: "Le statut doit être 'validée' ou 'non validée'",
+      });
+    }
+
+    // Récupération de l'id de l'utilisateur authentifié (déjà vérifié par le middleware)
+    const userId = req.user.userId;
+
+    // Détecter si on utilise PostgreSQL
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
+    // Insertion de l'avis dans la base de données
+    let result, avisId;
+    if (isPostgreSQL) {
+      const [insertResult] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id) VALUES (?, ?, ?, ?) RETURNING avis_id",
+        [noteNum, description, statut, userId]
+      );
+      avisId = pool.insertId || insertResult[0]?.avis_id;
+      result = { insertId: avisId };
+    } else {
+      [result] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id) VALUES (?, ?, ?, ?)",
+        [noteNum, description, statut, userId]
+      );
+      avisId = result.insertId;
+    }
+    
+    if (!avisId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création de l'avis : ID non récupéré",
+      });
+    }
+
+    // Récupération de l'avis créé
+    const [avisRows] = await pool.query(
+      "SELECT * FROM avis WHERE avis_id = ?",
+      [avisId]
+    );
+
+    if (avisRows.length === 0) {
+      return res.status(500).json({
+        message: "Erreur lors de la récupération de l'avis créé",
+      });
+    }
+
+    const avis = avisRows[0];
+
+    // Retourner la réponse avec l'avis créé
+    res.status(201).json({
+      message: "Avis créé avec succès",
+      avis: {
+        avis_id: avis.avis_id,
+        note: avis.note,
+        description: avis.description,
+        statut: avis.statut,
+        user_id: avis.user_id,
+      },
+    });
+    console.log("Avis créé avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la création de l'avis",
+      error: error.message,
+    });
+    console.error("Erreur lors de la création de l'avis :", error);
+  }
+}
+
+//Fonction pour la création d'un avis a partir d'une commnande //
+const createAvisByCommande = async (req, res) => {
+  try {
+    const { commandeId } = req.params;
+    const userId = req.user.userId;
+
+    // 1. Vérifier que la commande existe et appartient au user authentifié //
+    const [commandeRows] = await pool.query(
+      "SELECT * FROM commande WHERE commande_id = ? AND user_id = ?",
+      [commandeId, userId]
+    );
+    if (commandeRows.length === 0) {
+      return res.status(404).json({
+        message:
+          "Commande non trouvée ou vous n'avez pas accès à cette commande",
+      });
+    }
+
+    const commande = commandeRows[0];
+
+    // 2. Vérification que la commande est "livré" ou "terminée" //
+    // l'avis ne peut être créé que si la commande est "livré" ou "terminée"
+    if (commande.statut !== "livré" && commande.statut !== "terminée") {
+      return res.status(403).json({
+        message: "Vous ne pouvez donner un avis que pour une commande livrée ou terminée",
+      });
+    }
+
+    // 3. Vérifier qu'un avis n'existe pas déjà pour cette commande //
+    const [existingAvis] = await pool.query(
+      "SELECT * FROM avis WHERE commande_id = ?",
+      [commandeId]
+    );
+    if (existingAvis.length > 0) {
+      return res.status(409).json({
+        message: "Un avis existe déjà pour cette commande",
+      });
+    }
+
+    // 4. Récupération et validation des données du body //
+    const { note, description } = req.body;
+
+    // Vérification que note et description sont présents
+    if (!note || !description) {
+      return res.status(400).json({
+        message: "Les champs note et description sont requis",
+      });
+    }
+
+    // Vérification que la note est comprise entre 1 et 5
+    const noteNum = parseInt(note);
+    if (isNaN(noteNum) || noteNum < 1 || noteNum > 5) {
+      return res.status(400).json({
+        message: "La note doit être un nombre compris entre 1 et 5",
+      });
+    }
+
+    // 5. Insertion de l'avis dans la base de données //
+    // Statut par défaut : "non validée" (sera validé par un admin ensuite)
+    const isPostgreSQL = process.env.DB_TYPE === "postgres" || process.env.DB_TYPE === "postgresql";
+    
+    let result, avisId;
+    if (isPostgreSQL) {
+      const [insertResult] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id, commande_id) VALUES (?, ?, 'non validée', ?, ?) RETURNING avis_id",
+        [noteNum, description, userId, commandeId]
+      );
+      avisId = pool.insertId || insertResult[0]?.avis_id;
+      result = { insertId: avisId };
+    } else {
+      [result] = await pool.query(
+        "INSERT INTO avis (note, description, statut, user_id, commande_id) VALUES (?, ?, 'non validée', ?, ?)",
+        [noteNum, description, userId, commandeId]
+      );
+      avisId = result.insertId;
+    }
+    
+    if (!avisId) {
+      return res.status(500).json({
+        message: "Erreur lors de la création de l'avis : ID non récupéré",
+      });
+    }
+
+    // 6. Récupération de l'avis créé //
+    const [avisRows] = await pool.query(
+      "SELECT * FROM avis WHERE avis_id = ?",
+      [avisId]
+    );
+
+    if (avisRows.length === 0) {
+      return res.status(500).json({
+        message: "Erreur lors de la récupération de l'avis créé",
+      });
+    }
+
+    const avis = avisRows[0];
+
+    // 7. Retourner la réponse avec l'avis créé //
+    res.status(201).json({
+      message: "Avis créé avec succès pour la commande",
+      avis: {
+        avis_id: avis.avis_id,
+        note: avis.note,
+        description: avis.description,
+        statut: avis.statut,
+        user_id: avis.user_id,
+        commande_id: avis.commande_id,
+      },
+    });
+    console.log("Avis créé avec succès pour la commande");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la création de l'avis depuis la commande",
+      error: error.message,
+    });
+    console.error(
+      "Erreur lors de la création de l'avis depuis la commande :",
+      error
+    );
+  }
+}
+
+// Fonction pour récupérer les avis public // 
+const getAvisPublic = async (req, res) => {
+  try {
+    console.log("📥 Route GET /api/avis/public appelée");
+    // Récupérer tous les avis public validés avec les informations de l'utilisateur
+    console.log("🔍 Exécution requête SQL pour récupérer les avis publics");
+    const [rows] = await pool.query(
+      `SELECT 
+        a.avis_id,
+        a.note,
+        a.description,
+        a.image,
+        a.statut,
+        u.nom as user_nom,
+        u.prenom as user_prenom,
+        u.image as user_image
+      FROM avis a
+      LEFT JOIN "user" u ON a.user_id = u.user_id
+      WHERE a.statut = 'validée'
+      ORDER BY a.avis_id DESC
+      LIMIT 10`
+    );
+    // Formater les résultats : formater les chemins d'images comme dans menus.js
+    const avisFormatted = rows.map((avis) => {
+      // Formater le chemin de l'image
+      let imagePath = null;
+      if (avis.image) {
+        const imgTrimmed = avis.image.trim();
+        // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
+        if (
+          imgTrimmed.startsWith("http://") ||
+          imgTrimmed.startsWith("https://")
+        ) {
+          imagePath = imgTrimmed;
+        } else {
+          // Sinon, on ajoute le chemin de base pour les images locales
+          // Les images doivent être dans /public/images/avis/ ou /images/avis/
+          imagePath = imgTrimmed.startsWith("/")
+            ? imgTrimmed
+            : `/images/avis/${imgTrimmed}`;
+        }
+      }
+
+      // Formater l'image de profil de l'utilisateur
+      let userImagePath = null;
+      if (avis.user_image) {
+        const userImgTrimmed = avis.user_image.trim();
+        // Si c'est déjà une URL complète (http:// ou https://), on la garde telle quelle
+        if (
+          userImgTrimmed.startsWith("http://") ||
+          userImgTrimmed.startsWith("https://")
+        ) {
+          userImagePath = userImgTrimmed;
+        } else {
+          // Sinon, on ajoute le chemin de base pour les images locales
+          userImagePath = userImgTrimmed.startsWith("/")
+            ? userImgTrimmed
+            : `/images/users/${userImgTrimmed}`;
+        }
+      }
+
+      return {
+        avis_id: avis.avis_id,
+        note: avis.note,
+        description: avis.description,
+        image: imagePath, // Image de l'avis (si présente)
+        statut: avis.statut,
+        user_nom: avis.user_nom,
+        user_prenom: avis.user_prenom,
+        user_image: userImagePath, // Image de profil de l'utilisateur
+      };
+    });
+
+    console.log(`✅ ${avisFormatted.length} avis publics récupérés`);
+    res.status(200).json(avisFormatted);
+    console.log("Avis publics récupérés avec succès");
+  } catch (error) {
+    console.error("❌ Erreur lors de la récupération des avis publics :", error);
+    console.error("   Code:", error.code);
+    console.error("   Message:", error.message);
+    console.error("   Stack:", error.stack);
+    res.status(500).json({
+      message: "Erreur lors de la récupération des avis publics",
+      error: error.message,
+      code: error.code,
+    });
+  }
+}
+
+// Fonction pour récupérer tous les avis validé // 
+const getAllAvisValid =  async (req, res) => {
+  try {
+    // Récupérer tous les avis validés avec les informations de l'utilisateur
+    const [rows] = await pool.query(
+      `SELECT 
+        a.avis_id,
+        a.note,
+        a.description,
+        a.statut,
+        a.user_id,
+        u.email as user_email
+      FROM avis a
+      LEFT JOIN user u ON a.user_id = u.user_id
+      WHERE a.statut = 'validée'
+      ORDER BY a.avis_id DESC`
+    );
+
+    res.status(200).json(rows);
+    console.log("Avis récupérés avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération des avis",
+      error: error.message,
+    });
+    console.error("Erreur lors de la récupération des avis :", error);
+  }
+}
+
+// Fonction pour récupérer un avis depuis son ID pour les retourner en affichage public// 
+const getAvisById =  async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Vérification que l'ID est un nombre valide
+    const avisId = parseInt(id);
+    if (isNaN(avisId) || avisId <= 0) {
+      return res.status(400).json({ message: "ID d'avis invalide" });
+    }
+
+    // Vérifier que l'avis existe et appartient à l'utilisateur authentifié
+    const [rows] = await pool.query(
+      `SELECT 
+        a.avis_id,
+        a.note,
+        a.description,
+        a.statut,
+        a.user_id,
+        u.email as user_email
+      FROM avis a
+      LEFT JOIN user u ON a.user_id = u.user_id
+      WHERE a.avis_id = ? AND a.user_id = ?`,
+      [avisId, userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Avis non trouvé" });
+    }
+
+    // Retourner l'avis trouvé avec succès
+    res.status(200).json(rows[0]);
+    console.log("Avis trouvé avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération de l'avis",
+      error: error.message,
+    });
+    console.error("Erreur lors de la récupération de l'avis :", error);
+  }
+}
+
+// Fonction pour supprimer un avis depuis son iD //
+const deleteAvis = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Vérification que l'ID est un nombre valide
+    const avisId = parseInt(id);
+    if (isNaN(avisId) || avisId <= 0) {
+      return res.status(400).json({ message: "ID d'avis invalide" });
+    }
+
+    // Vérification que l'avis existe bien dans la base et appartient à l'utilisateur authentifié
+    const [rows] = await pool.query(
+      "SELECT * FROM avis WHERE avis_id = ? AND user_id = ?",
+      [avisId, userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Avis non trouvé ou vous n'avez pas accès à cet avis",
+      });
+    }
+
+    // Récupération de l'avis
+    const avis = rows[0];
+
+    // Vérification que l'avis peut être supprimé (seulement les avis "non validée")
+    if (avis.statut !== "non validée") {
+      return res.status(400).json({
+        message: `Impossible de supprimer un avis avec le statut "${avis.statut}". Seuls les avis non validés peuvent être supprimés.`,
+      });
+    }
+
+    // Suppression de l'avis
+    const [result] = await pool.query(
+      "DELETE FROM avis WHERE avis_id = ? AND user_id = ?",
+      [avisId, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Avis non trouvé" });
+    }
+
+    res.status(200).json({ message: "Avis supprimé avec succès" });
+    console.log("Avis supprimé avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la suppression de l'avis",
+      error: error.message,
+    });
+    console.error("Erreur lors de la suppression de l'avis :", error);
+  }
+}
+
+
+
+
+
+
+
+module.exports = {
+  createAvis,
+  createAvisByCommande,
+  getAvisPublic,
+  getAllAvisValid,
+  getAvisById,
+  deleteAvis
+}

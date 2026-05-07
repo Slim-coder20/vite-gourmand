@@ -18,12 +18,14 @@ function LoginPage() {
   // Utiliser useEffect pour éviter d'appeler navigate() pendant le rendu
   useEffect(() => {
     // Attendre que l'authentification et l'utilisateur soient bien définis
-    if (isAuthenticated && user && user.role_id) {
-      // Si l'utilisateur est un admin (role_id === 2), rediriger vers l'espace admin
-      if (user.role_id === 2) {
+    if (isAuthenticated && user && user.role_id != null) {
+      const rid = Number(user.role_id);
+      if (Number.isNaN(rid)) {
+        return;
+      }
+      if (rid === 2) {
         navigate("/admin/dashboard");
-      } else if (user.role_id === 3) {
-        // Si l'utilisateur est un employé (role_id === 3), rediriger vers l'espace employé
+      } else if (rid === 3) {
         navigate("/employee/dashboard");
       } else {
         // Sinon, rediriger vers la page d'accueil client
@@ -62,7 +64,7 @@ function LoginPage() {
 
       // Rediriger immédiatement selon le rôle de la réponse
       // pour éviter les problèmes de timing avec le useEffect
-      const userRole = response?.user?.role_id;
+      const userRole = Number(response?.user?.role_id);
       if (userRole === 2) {
         // Admin : rediriger vers l'espace admin
         navigate("/admin/dashboard");

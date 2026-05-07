@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       authService.setToken(response.token);
 
       // Mettre à jour l'état //
-      setUser(response.user);
+      setUser(authService.normalizeAuthUser(response.user));
       setIsAuthenticated(true);
 
       return response;
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       // Stocker le token dans localStorage
       authService.setToken(response.token);
       // Mettre à jour l'état //
-      setUser(response.user);
+      setUser(authService.normalizeAuthUser(response.user));
       setIsAuthenticated(true);
 
       return response;
@@ -88,22 +88,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Fonction pour vérifier le Token dans le localStorage //
+  // Fonction pour vérifier le Token dans le localStorage et recharger le profil (rôle) depuis l'API
   const checkAuth = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      // Récupérer le token depuis localStorage
       const token = authService.getToken();
       if (!token) {
-        // Pas de token = pas connecté
         setIsAuthenticated(false);
         setUser(null);
-        setIsLoading(false);
         return;
       }
-      setIsAuthenticated(true);
+      try {
+        const data = await authService.fetchCurrentUser();
+        setUser(authService.normalizeAuthUser(data.user));
+        setIsAuthenticated(true);
+      } catch {
+        authService.removeToken();
+        setIsAuthenticated(false);
+        setUser(null);
+        setError(null);
+      }
     } catch {
-      // En cas d'erreur, nettoyer
       authService.removeToken();
       setIsAuthenticated(false);
       setUser(null);

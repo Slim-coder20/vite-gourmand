@@ -1,0 +1,551 @@
+// pour la connexion à la base de données //
+const pool = require("../config/database"); 
+// Les envoies de mail de rénitialisation //
+const { sendPasswordResetEmail } = require("../config/email");
+// pour créer un token JWT //
+const jwt = require("jsonwebtoken"); 
+// pour hacher le mot de passe //
+const bcrypt = require("bcrypt"); 
+// pour générer un token aléatoire //
+const crypto = require("crypto");
+
+/** Objet utilisateur exposé au front (sans mot de passe). IDs en nombre pour éviter role_id "3" !== 3. */
+function userPublicFromRow(row) {
+  if (!row) return null;
+  const uid = row.user_id;
+  const rid = row.role_id;
+  return {
+    user_id: uid != null && uid !== "" ? Number(uid) : uid,
+    nom: row.nom,
+    prenom: row.prenom,
+    email: row.email,
+    telephone: row.telephone,
+    adresse_postals: row.adresse_postals,
+    ville: row.ville,
+    pays: row.pays,
+    role_id: rid != null && rid !== "" ? Number(rid) : rid,
+  };
+}
+
+// Fonction pour inscription user // 
+const register = async (req, res) => {
+  try {
+    const {
+      nom,
+      prenom,
+      email,
+      password,
+      adresse_postals,
+      telephone,
+      ville,
+      pays,
+    } = req.body;
+    // Vérification que tous les champs requis sont présents //
+    if (
+      !nom ||
+      !prenom ||
+      !email ||
+      !password ||
+      !adresse_postals ||
+      !telephone
+    ) {
+      return res.status(400).json({ message: "Tous les champs sont requis" });
+    }
+
+    // Validation du format de l'email //
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: "L'email n'est pas valide (doit contenir un @ et un .)",
+      });
+    }
+
+    // Vérification si l'email existe déjà dans la base de données //
+    const [existingUser] = await pool.query(
+      "SELECT * FROM user WHERE email = ?",
+      [email]
+    );
+    if (existingUser.length > 0) {
+      return res
+        .status(409)
+        .json({ message: "L'email existe déjà dans la base de données" });
+    }
+
+    // Vérification du format du mot de passe (10 caractères minimum, majuscule, minuscule, chiffre, caractère spécial) //
+    if (password.length < 10) {
+      return res.status(400).json({
+        message: "Le mot de passe doit contenir au moins 10 caractères",
+      });
+    }
+
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+
+    if (!hasSpecialChar || !hasUpperCase || !hasLowerCase || !hasNumber) {
+      return res.status(400).json({
+        message:
+          "Le mot de passe doit contenir au moins un caractère spécial, une majuscule, une minuscule et un chiffre",
+      });
+    }
+
+    // hashage du mot de passs //
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Récupérer le role_id du rôle "utilisateur" //
+    const [roleRows] = await pool.query(
+      "SELECT role_id FROM role WHERE libele = 'utilisateur'"
+    );
+    if (roleRows.length === 0) {
+      return res.status(500).json({
+        message: "Le rôle 'utilisateur' n'existe pas dans la base de données",
+      });
+    }
+    const roleId = roleRows[0].role_id;
+
+    // Détecter si on utilise PostgreSQL
+    const isPostgreSQL =
+      process.env.DB_TYPE === "postgres" ||
+      process.env.DB_TYPE === "postgresql";
+
+    // insertion de l'utilisateur dans la base de données //
+    let result, userId;
+    if (isPostgreSQL) {
+      // PostgreSQL : utiliser RETURNING pour récupérer l'ID
+      // Le wrapper convertit automatiquement ? en $1, $2, etc.
+      const [insertResult] = await pool.query(
+        'INSERT INTO "user" (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING user_id',
+        [
+          nom,
+          prenom,
+          email,
+          hashedPassword,
+          adresse_postals,
+          telephone,
+          ville,
+          pays,
+          roleId,
+        ]
+      );
+      // Le wrapper met l'ID dans pool.insertId OU dans le premier résultat
+      userId = pool.insertId || insertResult[0]?.user_id;
+      result = { insertId: userId };
+    } else {
+      // MySQL : comportement normal
+      [result] = await pool.query(
+        "INSERT INTO user (nom, prenom, email, password, adresse_postals, telephone, ville, pays, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          nom,
+          prenom,
+          email,
+          hashedPassword,
+          adresse_postals,
+          telephone,
+          ville,
+          pays,
+          roleId,
+        ]
+      );
+      userId = result.insertId;
+    }
+
+    if (!userId) {
+      return res.status(500).json({
+        message:
+          "Erreur lors de la création de l'utilisateur : ID non récupéré",
+      });
+    }
+
+    // récupération de l'utilisateur créé //
+    const [rows] = await pool.query('SELECT * FROM "user" WHERE user_id = ?', [
+      userId,
+    ]);
+    if (rows.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Erreur lors de la création de l'utilisateur" });
+    }
+    // création du token JWT //
+    const jwtSecret = process.env.JWT_SECRET || "secret_par_defaut_dev_only";
+    if (!process.env.JWT_SECRET) {
+      console.warn(
+        "⚠️  JWT_SECRET non défini, utilisation d'une clé par défaut (développement uniquement)"
+      );
+    }
+    const token = jwt.sign(
+      { userId: Number(rows[0].user_id), role: Number(roleId) },
+      jwtSecret,
+      { expiresIn: "24h" }
+    );
+
+    // retour de la réponse (sans le mot de passe) //
+    res.status(201).json({
+      message: "Utilisateur créé avec succès",
+      token: token,
+      user: userPublicFromRow(rows[0]),
+    });
+    console.log("Utilisateur créé avec succès");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la création de l'utilisateur",
+      error: error.message,
+    });
+    console.error("Erreur lors de la création de l'utilisateur :", error);
+  }
+}
+
+// Fonction pour connexion user // 
+const login =   async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Vérification que tous les champs sont présents //
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Tous les champs sont requis (email, password)" });
+    }
+
+    // Chercher l'utilisateur par son email //
+    const [userRows] = await pool.query("SELECT * FROM user WHERE email = ?", [
+      email,
+    ]);
+
+    // Vérifier si l'utilisateur existe //
+    if (userRows.length === 0) {
+      return res
+        .status(401)
+        .json({ message: "Email ou mot de passe incorrect" });
+    }
+
+    // Vérification du mot de passe //
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      userRows[0].password
+    );
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ message: "Email ou mot de passe incorrect" });
+    }
+
+    // Création du token JWT //
+    const jwtSecret = process.env.JWT_SECRET || "secret_par_defaut_dev_only";
+    const token = jwt.sign(
+      {
+        userId: Number(userRows[0].user_id),
+        role: Number(userRows[0].role_id),
+      },
+      jwtSecret,
+      { expiresIn: "24h" }
+    );
+
+    // Retour de la réponse (sans le mot de passe) //
+    res.status(200).json({
+      message: "Connexion réussie",
+      token: token,
+      user: userPublicFromRow(userRows[0]),
+    });
+    console.log("Connexion réussie");
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la connexion de l'utilisateur",
+      error: error.message,
+    });
+    console.error("Erreur lors de la connexion de l'utilisateur :", error);
+  }
+}
+
+// Profil courant cette fonction est utilisée pour récupérer le profile de l'utilisateur connecté//
+const getMe = async (req, res) => {
+  try {
+    const [userRows] = await pool.query(
+      "SELECT user_id, nom, prenom, email, telephone, adresse_postals, ville, pays, role_id FROM user WHERE user_id = ?",
+      [req.user.userId]
+    );
+    if (userRows.length === 0) {
+      return res.status(404).json({ message: "Utilisateur introuvable" });
+    }
+    res.status(200).json({ user: userPublicFromRow(userRows[0]) });
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération du profil",
+      error: error.message,
+    });
+    console.error("Erreur getMe :", error);
+  }
+};
+
+// Fonction pour deconnexion user // 
+const logout = async (req, res) => {
+  try {
+    // Le token est vérifié par le middleware authenticateToken
+    // req.user contient les infos de l'utilisateur authentifié
+    // On ne fait rien ici, le token est supprimé du frontend par le middleware authenticateToken
+    // Retour de la réponse (sans message)
+    res.status(200).json({});
+    console.log(
+      `Déconnexion réussie pour l'utilisateur : ${req.user.userId} (${req.user.email})`
+    );
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la déconnexion de l'utilisateur",
+      error: error.message,
+    });
+    console.error("Erreur lors de la déconnexion de l'utilisateur :", error);
+  }
+}
+
+
+// Fonction pour l'envoie du lien de rénitialisation du mot de passe  // 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    // Validation de l'email //
+    if (!email) {
+      return res.status(400).json({ message: "L'email est requis" });
+    }
+
+    // Vérfication du format de l'email //
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "L'email n'est pas valide" });
+    }
+
+    // On cherche l'utilisateur  //
+    const [userRows] = await pool.query("SELECT * FROM user WHERE email = ?", [
+      email,
+    ]);
+
+    // Sécurité on révèle pas si l'amil existe //
+    if (userRows.length === 0) {
+      return res.status(200).json({
+        message: "Si cet email existe, un lien vous a été envoyé.",
+      });
+    }
+
+    const user = userRows[0];
+
+    // Générer un token sécurisé
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // Calculer l'expiration (1 heure)
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    // Supprimer les anciens tokens non utilisés
+    await pool.query(
+      "DELETE FROM password_reset_tokens WHERE user_id = ? AND used = FALSE",
+      [user.user_id]
+    );
+
+    // Insérer le nouveau token
+    await pool.query(
+      "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
+      [user.user_id, resetToken, expiresAt]
+    );
+
+    // Envoyer l'email de réinitialisation
+    // Déterminer l'URL du frontend (production ou développement)
+    let frontendUrl = process.env.FRONTEND_URL;
+
+    // Si FRONTEND_URL n'est pas défini, essayer de le déduire depuis les headers
+    if (!frontendUrl) {
+      // En production Vercel, utiliser l'URL de la requête
+      const protocol =
+        req.headers["x-forwarded-proto"] || req.protocol || "https";
+      const host = req.headers.host || req.headers["x-forwarded-host"];
+
+      // Si c'est une URL de preview Vercel, utiliser l'URL de production à la place
+      // Les URLs de preview ont le format: project-name-xxx-username.vercel.app
+      // L'URL de production est: project-name.vercel.app
+      if (host && host.includes(".vercel.app")) {
+        // Extraire le nom du projet (avant le premier tiret avec hash)
+        const projectMatch = host.match(/^([^-]+)/);
+        if (projectMatch) {
+          const projectName = projectMatch[1];
+          frontendUrl = `${protocol}://${projectName}.vercel.app`;
+          console.log(
+            `⚠️ URL de preview détectée (${host}), utilisation de l'URL de production: ${frontendUrl}`
+          );
+        } else {
+          frontendUrl = `${protocol}://${host}`;
+        }
+      } else if (host) {
+        frontendUrl = `${protocol}://${host}`;
+      } else {
+        // Fallback pour développement
+        frontendUrl = "http://localhost:5173";
+      }
+    }
+
+    console.log(
+      `🔍 Frontend URL utilisée pour le reset password: ${frontendUrl}`
+    );
+    console.log(`🔍 Reset token généré: ${resetToken}`);
+    console.log(`🔍 Lien complet: ${frontendUrl}/reset-password/${resetToken}`);
+
+    try {
+      await sendPasswordResetEmail(user.email, resetToken, frontendUrl);
+      console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
+    } catch (emailError) {
+      console.error("Erreur lors de l'envoi de l'email :", emailError);
+      // On ne bloque pas la réponse si l'email échoue, pour ne pas révéler si l'email existe
+      // En développement, on peut retourner le token dans la réponse pour faciliter les tests
+      if (process.env.NODE_ENV === "development") {
+        return res.status(200).json({
+          message: "Si cet email existe, un lien vous a été envoyé.",
+          warning:
+            "Erreur lors de l'envoi de l'email, token retourné pour les tests",
+          resetToken: resetToken,
+          resetLink: `${frontendUrl}/reset-password/${resetToken}`,
+        });
+      }
+    }
+
+    // Réponse de succès (même message que si l'email n'existe pas, pour la sécurité)
+    res.status(200).json({
+      message: "Si cet email existe, un lien vous a été envoyé.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la demande de réinitialisation",
+      error: error.message,
+    });
+    console.error("Erreur lors de la demande de réinitialisation :", error);
+  }
+}
+
+
+//Fonction pour rénitialisation du mot de passe utilisateur // 
+const resetPassword =  async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Validation
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        message: "Le token et le nouveau mot de passe sont requis",
+      });
+    }
+
+    // Validation du format du mot de passe
+    if (newPassword.length < 10) {
+      return res.status(400).json({
+        message: "Le mot de passe doit contenir au moins 10 caractères",
+      });
+    }
+
+    // Vérifier les règles du mot de passe
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+    const hasUpperCase = /[A-Z]/.test(newPassword);
+    const hasLowerCase = /[a-z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+
+    if (!hasSpecialChar || !hasUpperCase || !hasLowerCase || !hasNumber) {
+      return res.status(400).json({
+        message:
+          "Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial",
+      });
+    }
+
+    // Chercher le token (d'abord sans vérifier used pour le débogage)
+    const [allTokenRows] = await pool.query(
+      "SELECT * FROM password_reset_tokens WHERE token = ?",
+      [token]
+    );
+
+    // Log pour déboguer
+    console.log("Token reçu:", token);
+    console.log("Tokens trouvés dans la BD:", allTokenRows.length);
+    if (allTokenRows.length > 0) {
+      console.log(
+        "Token trouvé - used:",
+        allTokenRows[0].used,
+        "expires_at:",
+        allTokenRows[0].expires_at
+      );
+    }
+
+    // Chercher le token non utilisé
+    const [tokenRows] = await pool.query(
+      "SELECT * FROM password_reset_tokens WHERE token = ? AND used = FALSE",
+      [token]
+    );
+
+    if (tokenRows.length === 0) {
+      // Vérifier si le token existe mais est déjà utilisé
+      if (allTokenRows.length > 0 && allTokenRows[0].used === 1) {
+        return res.status(400).json({
+          message:
+            "Ce lien de réinitialisation a déjà été utilisé. Veuillez faire une nouvelle demande.",
+        });
+      }
+      // Vérifier si le token n'existe pas du tout
+      return res.status(400).json({
+        message: "Token invalide ou déjà utilisé",
+      });
+    }
+
+    const resetToken = tokenRows[0];
+
+    // Vérifier l'expiration
+    const now = new Date();
+    if (new Date(resetToken.expires_at) < now) {
+      await pool.query(
+        "UPDATE password_reset_tokens SET used = TRUE WHERE token_id = ?",
+        [resetToken.token_id]
+      );
+      return res.status(400).json({
+        message: "Le token a expiré. Veuillez faire une nouvelle demande.",
+      });
+    }
+
+    // Hash le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mettre à jour le mot de passe
+    await pool.query("UPDATE user SET password = ? WHERE user_id = ?", [
+      hashedPassword,
+      resetToken.user_id,
+    ]);
+
+    // Marquer le token comme utilisé
+    await pool.query(
+      "UPDATE password_reset_tokens SET used = TRUE WHERE token_id = ?",
+      [resetToken.token_id]
+    );
+
+    // Supprimer les autres tokens non utilisés
+    await pool.query(
+      "DELETE FROM password_reset_tokens WHERE user_id = ? AND used = FALSE",
+      [resetToken.user_id]
+    );
+
+    res.status(200).json({
+      message: "Mot de passe réinitialisé avec succès",
+    });
+    console.log(
+      `Mot de passe réinitialisé pour l'utilisateur ${resetToken.user_id}`
+    );
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la réinitialisation du mot de passe",
+      error: error.message,
+    });
+    console.error(
+      "Erreur lors de la réinitialisation du mot de passe :",
+      error
+    );
+  }
+}
+
+module.exports = {
+  register,
+  login,
+  getMe,
+  logout,
+  forgotPassword,
+  resetPassword,
+};
