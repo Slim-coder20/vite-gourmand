@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fonction pour enregistrer un nouvel utilisateur //
+  // Fonction pour enregistrer un nouvel utilisateur AuthContext//
   const register = async (userData) => {
     try {
       setIsLoading(true);

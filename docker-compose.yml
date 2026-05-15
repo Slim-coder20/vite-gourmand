@@ -27,9 +27,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-
-
+# Service MongoDB :
   mongodb:
     image: mongo:8.0
     restart: always
@@ -167,4 +165,4 @@ services:
 # Ces volumes permettent de conserver les données même après l'arrêt des conteneurs
 volumes:
   mongodb_data: # Volume pour les données MongoDB
-  postgres_data: # Volume pour les données MySQL (persiste les données entre les redémarrages)
+  postgres_data: # Volume pour les données PostgresSQL (persiste les données entre les redémarrages)

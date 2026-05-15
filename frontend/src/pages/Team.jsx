@@ -61,7 +61,7 @@ function Team() {
 
           {/* Grille des membres de l'équipe */}
           <div className={styles.teamGrid}>
-            {teamMembers.map((member) => (
+              {teamMembers.map((member) => (
               <div key={member.id} className={styles.teamCard}>
                 {/* Photo de profil */}
                 <div className={styles.teamIllustration}>

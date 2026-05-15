@@ -125,8 +125,8 @@ function Header() {
           <div className={styles.desktopMenu}>
             {/* Navigation à gauche */}
             <div className={styles.navLeft}>
-              <a href="/team">L'équipe</a>
-              <a href="/contact">Contact</a>
+              <Link to="/team">L'équipe</Link>
+              <Link to="/contact">Contact</Link>  
             </div>
 
             {/* Boutons à droite */}
@@ -146,7 +146,9 @@ function Header() {
                   </button>
                   {/* On affiche un menu mon compte permmettant d'accéder au compte du user */}
                   <div className={styles.userMenu}>
-                    <Link to="/dashboard" className="btn-outline">Mon compte</Link>
+                    <Link to="/dashboard" className="btn-outline">
+                      Mon compte
+                    </Link>
                   </div>
                 </div>
               ) : (
