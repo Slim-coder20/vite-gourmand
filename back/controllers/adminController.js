@@ -302,12 +302,12 @@ const getStatistiquesChiffreAffaires = async (req, res) => {
 const createEmploye = async (req, res) => {
   try {
     // 1. Récupération des données depuis le body
-    const { email, password } = req.body;
+    const { email, password, nom, prenom, telephone } = req.body;
 
     // 2. Vérification que tous les champs requis sont présents
-    if (!email || !password) {
+    if (!email || !password || !nom || !prenom || !telephone) {
       return res.status(400).json({
-        message: "Les champs email et password sont requis",
+        message: "Tous les champs sont requis",
       });
     }
 
@@ -377,16 +377,16 @@ const createEmploye = async (req, res) => {
     let result, userId;
     if (isPostgreSQL) {
       const [insertResult] = await pool.query(
-        'INSERT INTO "user" (email, password, role_id) VALUES (?, ?, ?) RETURNING user_id',
-        [email, hashedPassword, roleId]
+        'INSERT INTO "user" (email, password, role_id, nom, prenom , telephone) VALUES (?, ?, ?, ?, ?, ?) RETURNING user_id',
+        [email, hashedPassword, roleId, nom, prenom, telephone]
       );
       userId = pool.insertId || insertResult[0]?.user_id;
       result = { insertId: userId };
     } else {
       [result] = await pool.query(
-      "INSERT INTO user (email, password, role_id) VALUES (?, ?, ?)",
-      [email, hashedPassword, roleId]
-    );
+        "INSERT INTO user (email, password, role_id, nom, prenom, telephone) VALUES (?, ?, ?, ?, ?, ?)",
+        [email, hashedPassword, roleId, nom, prenom, telephone],
+      );
       userId = result.insertId;
     }
     
@@ -398,7 +398,7 @@ const createEmploye = async (req, res) => {
 
     // 10. Récupérer l'employé créé
     const [employeRows] = await pool.query(
-      'SELECT user_id, email, role_id FROM "user" WHERE user_id = ?',
+      'SELECT user_id, email, role_id, nom , prenom, telephone FROM "user" WHERE user_id = ?',
       [userId]
     );
 
@@ -425,6 +425,9 @@ const createEmploye = async (req, res) => {
         user_id: employe.user_id,
         email: employe.email,
         role_id: employe.role_id,
+        nom: employe.nom,
+        prenom: employe.prenom,
+        telephone: employe.telephone,
       },
     });
   } catch (error) {

@@ -24,6 +24,9 @@ function AdminEmployesPage() {
   const [showDesactivateModal, setShowDesactivateModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({
+    nom: "",
+    prenom: "",
+    telephone: "",
     email: "",
     password: "",
   });
@@ -69,32 +72,49 @@ function AdminEmployesPage() {
   };
 
   // Fonction pour créer un employé
-  const handleCreateEmploye = async (email, password) => {
+  const handleCreateEmploye = async (
+    email,
+    password,
+    nom,
+    prenom,
+    telephone,
+  ) => {
     try {
       setLoading(true);
       setError(null);
       setSuccessMessage(null);
 
-      if (!email || !password) {
+      if (!email || !password || !nom || !prenom || !telephone) {
         setError("Veuillez remplir tous les champs requis");
-        return;
+        setLoading(false);
+        return false;
       }
 
-      const response = await createEmploye({ email, password });
+      const response = await createEmploye({
+        email,
+        password,
+        nom,
+        prenom,
+        telephone,
+      });
 
       if (response && response.data) {
         setSuccessMessage("Employé créé avec succès");
         setCreateForm({
           email: "",
           password: "",
+          nom: "",
+          prenom: "",
+          telephone: "",
         });
         await loadEmployes();
         setTimeout(() => {
           setSuccessMessage(null);
         }, 3000);
-      } else {
-        setError("Erreur lors de la création de l'employé");
+        return true;
       }
+      setError("Erreur lors de la création de l'employé");
+      return false;
     } catch (error) {
       setError(error.message || "Erreur lors de la création de l'employé");
       console.error("Erreur:", error);
@@ -135,6 +155,9 @@ function AdminEmployesPage() {
     setCreateForm({
       email: "",
       password: "",
+      nom: "",
+      prenom: "",
+      telephone: "",
     });
     setError(null);
   };
@@ -145,6 +168,9 @@ function AdminEmployesPage() {
     setCreateForm({
       email: "",
       password: "",
+      nom: "",
+      prenom: "",
+      telephone: "",
     });
     setError(null);
   };
@@ -153,12 +179,26 @@ function AdminEmployesPage() {
   const handleSubmitCreate = async (e) => {
     e.preventDefault();
     try {
-      if (!createForm.email || !createForm.password) {
+      if (
+        !createForm.email ||
+        !createForm.password ||
+        !createForm.nom ||
+        !createForm.prenom ||
+        !createForm.telephone
+      ) {
         setError("Veuillez remplir tous les champs requis");
         return;
       }
-      await handleCreateEmploye(createForm.email, createForm.password);
-      handleCloseCreateModal();
+      const created = await handleCreateEmploye(
+        createForm.email,
+        createForm.password,
+        createForm.nom,
+        createForm.prenom,
+        createForm.telephone,
+      );
+      if (created) {
+        handleCloseCreateModal();
+      }
     } catch (error) {
       setError(error.message || "Erreur lors de la création de l'employé");
     }
@@ -314,6 +354,51 @@ function AdminEmployesPage() {
                       }
                       required
                       minLength={10}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="nom">Nom*</label>
+                    <input
+                      type="text"
+                      id="nom"
+                      value={createForm.nom}
+                      onChange={(e) =>
+                        setCreateForm({
+                          ...createForm,
+                          nom: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="prenom">Prenom*</label>
+                    <input
+                      type="text"
+                      id="prenom"
+                      value={createForm.prenom}
+                      onChange={(e) =>
+                        setCreateForm({
+                          ...createForm,
+                          prenom: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="telephone">Telephone*</label>
+                    <input
+                      type="text"
+                      id="telephone"
+                      value={createForm.telephone}
+                      onChange={(e) =>
+                        setCreateForm({
+                          ...createForm,
+                          telephone: e.target.value,
+                        })
+                      }
+                      required
                     />
                   </div>
                   <div className={styles.modalButtons}>
